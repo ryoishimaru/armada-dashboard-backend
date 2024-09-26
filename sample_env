@@ -1,0 +1,37 @@
+# node env production,staging,development
+
+NODE_ENV='development'
+APP_NAME='armada-backend'
+APP_VERSION='1.0.0'
+APP_PORT='5500'
+APP_HOST='localhost'
+ASSETS_URL_BASE='http://localhost:5500'
+
+# Database type we are using
+DB_CLIENT='mysql'
+
+# Database Environment setting for the connection
+DB_PORT='3306'
+DB_HOST='localhost'
+DB_NAME='armada_dev_db'
+DB_NAME_TEST='armada_test'
+DB_USER='root'
+DB_PASSWORD=''
+DB_CHARSET ="utf8mb4"
+DB_TIMEZONE ="UTC"
+
+
+#jwt constants
+JWT_SECRET_KEY = '4EBo5WQalhdA4=VH@8fU5gRYDKwc)/Zm|SRvrSeWY7UKCS]1j@Hz$@ptRITF]2N9<QuUp@7=I2f9s6k4dnh'
+JWT_EXPIRE_TIME = '2d'
+
+#api key 
+API_KEY ='m2E7FFKm3v8e!xCxj|6RAC87lMA2wOFXt8i3HX&klH}?{556dc1kwyllokWzqeKw&kH}?{j7UuFXn55BE508zy7gEHNMx'
+
+
+#crypto secret key
+CRYPTO_SECRET_KEY = '0ZT0<_5Iz+I%n^x_?+J@0k1dUBys5z#,GDQZPAFuIoNhlqW9XLipmpZxJCerRR29`9gh:+)|=TYn7uNcJoT3jvelg4^:Q+jdG]12I<pgENi3pp6LK7XFfv8+8jFL'
+
+CORS_ALLOW_DOMAIN='http://localhost:3000'
+
+ENCRYPTION_SECRET_KEY = 'enc_secret'

@@ -1,0 +1,305 @@
+{
+    "components": {
+        "signup": {
+            "summary": "Super Admin Signup API.",
+            "description": "A admin can do signup using this API",
+            "tags": [
+                "Auth"
+            ],
+            "consumes": [
+                "application/json"
+            ],
+            "produces": [
+                "application/json"
+            ],
+            "requestBody": {
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "firstName",
+                                "lastName",
+                                "email",
+                                "password",
+                                "cnfPassword"
+                            ],
+                            "properties": {
+                                "firstName": {
+                                    "type": "string",
+                                    "description": "Enter first name (Max-60).",
+                                    "example": "Armada"
+                                },
+                                "lastName": {
+                                    "type": "string",
+                                    "description": "Enter last name (Max-60).",
+                                    "example": "Beauty"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "description": "Enter unique email of user (Min-5,Max-100).",
+                                    "example": "armada.test@gmail.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "Enter password that contain at least one uppercase, lowercase, number, and a special character (Min-6,Max-12).",
+                                    "example": "Anything#12"
+                                },
+                                "cnfPassword": {
+                                    "type": "string",
+                                    "description": "Enter confirm password (Min-6,Max-12).",
+                                    "example": "Anything#12"
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": true
+            },
+            "responses": {
+                "200": {
+                    "description": "When super admin signup successfully.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "integer",
+                                        "example": 200
+                                    },
+                                    "data": {
+                                        "type": "object",
+                                        "example": {
+                                            "token": "eyJhGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbHViTmFtZSI6Ik1pbmRpaWkgU3lzdGVtczEiLCJwaG9uZURpYWxDb2RlIjoiOTEiLCJwaG9uZU51bWJlciI6Ijg4MjE5OTU5ODQiLCJlbWFpbCI6ImRlZXBhay5taW5kaWlpM0BtYWlsaW5hdG9yLmNvbSIsInBhc3N3b3JkIjoiVTJGc2RHVmtYMS9yeURPUk5mNzFET0NHVjA5SEpkS0FKbTdsRGVQK1dDQT0iLCJlQ29kZSI6IlUyRnNkR1ZrWDE4TlFRU2hKY2lzQnhCTk1yZVhQay9iOWl5QXVDMzIveUU9IiwicENvZGUiOiJVMkZzZEdWa1gxL2tTSUQrUHgrdi9Sb0NyczhWWVFHSXpGVEdYTXVKV3NnPSIsImlhdCI6MTcxMzc5NDM2NSwiZXhwIjoxNzE2Mzg2MzY1fQ.FdtZJs8OKvNaFXQsNoMNbuBSvnVuAdNnHwL7KnYujsw"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Invalid Api Key",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "integer",
+                                        "example": 102
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "Validation errors.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "properties": {
+                                            "code": {
+                                                "type": "integer",
+                                                "example": 100
+                                            },
+                                            "errors": {
+                                                "type": "array",
+                                                "example": [
+                                                    "device id is missing.",
+                                                    "device type is missing.",
+                                                    "device token is missing.",
+                                                    "api access key is missing."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "code":{
+                                                "type": "integer",
+                                                "example": 105
+                                            },
+                                            "message":{
+                                                "type": "string",
+                                                "example":"Invalid email format."
+                                            },
+                                            "data": {
+                                                "type": "object",
+                                                "example": {
+                                                    "fields": {
+                                                        "email": [
+                                                          "Invalid email format."
+                                                        ]
+                                                      }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "When email alredy used",
+                                        "type": "object",
+                                        "properties": {
+                                            "code":{
+                                                "type":"integer",
+                                                "example": 112
+                                                },
+                                            "data": {}
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "login": {
+            "summary": "Login API.",
+            "description": "Authenticates a admin and returns an access token",
+            "tags": [
+                "Auth"
+            ],
+            "consumes": [
+                "application/json"
+            ],
+            "produces": [
+                "application/json"
+            ],
+            "requestBody": {
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "email",
+                                "password"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "description": "Enter email.",
+                                    "example": "suadmin@gmail.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "Enter password.",
+                                    "example": "Anything#12"
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": true
+            },
+            "responses": {
+                "200": {
+                    "description": "When user login successfully.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "integer",
+                                        "example": 200
+                                    },
+                                    "data": {
+                                        "type": "object",
+                                        "example": {
+                                            "token": "eyJhbGciOiJIzI1NiIR5cCI6IkpXVCJ9.eyJ1c2VyX3R5cGUiOiJicmFuZCIsfaWQiOiJwZW5SZTciLCJkZXZpY2VfaWQiOiIxMjM0NSIsImlhdCI6MTcxNTkzNzkyNSwiZXhwIjoxNzE4NTI5OTI1fQ.KgCjRnHJhdNw8oKrjub-m5Gl57ZhZqV-2JyxWA"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "401": {
+                    "description": "Invalid Api Key",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "integer",
+                                        "example": 102
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "400": {
+                    "description": "Validation errors.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "properties": {
+                                            "code": {
+                                                "type": "integer",
+                                                "example": 100
+                                            },
+                                            "errors": {
+                                                "type": "array",
+                                                "example": [
+                                                    "device id is missing.",
+                                                    "device type is missing.",
+                                                    "device token is missing.",
+                                                    "api access key is missing."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "Validation errors.",
+                                        "type": "object",
+                                        "properties": {
+                                            "code":{
+                                                "type": "integer",
+                                                "example": 105
+                                            },
+                                            "message":{
+                                                "type":"string",
+                                                "example":"Invalid email format."
+                                            },
+                                            "data": {
+                                                "type": "object",
+                                                "example": {
+                                                    "fields": {
+                                                        "email": [
+                                                            "Invalid email format."
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "description": "When entered email & password not match.",
+                                        "type": "object",
+                                        "properties": {
+                                            "code": {
+                                                "type": "integer",
+                                                "example": 111
+                                            },
+                                            "data": {}
+                                        }
+                                    } 
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
