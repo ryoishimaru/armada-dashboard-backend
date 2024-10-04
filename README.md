@@ -33,10 +33,8 @@ Armada is a Node.js monolithic application, organized into modules, and deployed
 
 Routes are versioned based on the module:
 
-const superAdminRoutes = require('./src/modules/superAdmin/routes');
 const salonRoutes = require('./src/modules/salon/routes');
 
-app.use("/superAdmin/v1", superAdminRoutes);
 app.use("/salon/v1", salonRoutes);
 
 ## Database Configuration

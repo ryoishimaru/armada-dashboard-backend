@@ -13,9 +13,9 @@ describe('Auth test cases', () => {
 
    /*********************************************************************/
 
-   // Test cases for superadmin/v1/signup api
-   test('test endpoint superadmin/v1/signup when any header missing or entered wrong', async () => {
-      const response = await request(app).post('/superadmin/v1/signup').set({}),
+   // Test cases for salon/v1/signup api
+   test('test endpoint salon/v1/signup when any header missing or entered wrong', async () => {
+      const response = await request(app).post('/salon/v1/signup').set({}),
       resBody = response.body;
       expect(resBody.code).toBe(100);
    });

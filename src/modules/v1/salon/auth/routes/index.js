@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { signUpValidator } from "!/superAdmin/auth/validators/signUpValidator";
-import { loginValidator } from "!/superAdmin/auth/validators/loginValidator";
+import { signUpValidator } from "!/salon/auth/validators/signUpValidator";
+import { loginValidator } from "!/salon/auth/validators/loginValidator";
 
 // create object for auth controller routes
 const auth = new Router();

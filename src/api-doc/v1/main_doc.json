@@ -27,14 +27,14 @@
         }
     ],
     "paths": {
-        "/superAdmin/v1/signup": {
+        "/salon/v1/signup": {
             "post": {
-                "$ref": "././superAdmin/auth/authPath.json#/components/signup"
+                "$ref": "././salon/auth/authPath.json#/components/signup"
             }
         },
-        "/superAdmin/v1/login": {
+        "/salon/v1/login": {
             "post": {
-                "$ref": "././superAdmin/auth/authPath.json#/components/login"
+                "$ref": "././salon/auth/authPath.json#/components/login"
             }
         }
     },

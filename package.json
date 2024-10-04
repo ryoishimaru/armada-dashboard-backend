@@ -19,6 +19,7 @@
     "ajv-formats": "^2.1.1",
     "awilix": "^9.0.0",
     "babel-plugin-root-import": "^6.6.0",
+    "basic-ftp": "^5.0.5",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",

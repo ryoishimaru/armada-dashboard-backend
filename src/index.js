@@ -1,7 +1,7 @@
 import express from "express";
 var http = require('http');
 import bodyParser from "body-parser";
-import { suAdminRoutes } from '!/superAdmin/routes';
+import { salonRoutes } from '!/salon/routes';
 import { notFound } from "./middlewares/errorHandler";
 import Path from "path";
 import logger from "~/utils/logger";
@@ -40,7 +40,7 @@ app.use(
 /**
  * router managment for v1
  */
-app.use("/superadmin", suAdminRoutes);
+app.use("/salon", salonRoutes);
 
 /*set error middleware*/
 app.use(notFound); //return default error message not found
