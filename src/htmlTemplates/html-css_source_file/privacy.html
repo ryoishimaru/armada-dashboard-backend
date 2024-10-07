@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!--METAタグ-->
+<?php $Path = "../"; include("../inc/head_meta.html"); ?>
+<title>プライバシーポリシー <?php include("inc/tit.html"); ?></title>
+<meta name="description" content="髪の悩みからシミ・シワ・美白の悩みまで、アルマダスタイルにお任せください。" />
+<meta name="keywords" content="armada-style,アルマダスタイル,電子トリートメント,ヘアケア,スキンケア" />
+<!--CSS/JS/Bootstrap読込-->
+<?php include("../inc/head_css_js.html"); ?>
+</head>
+
+<body>
+
+<!--GTM_noscript-->
+<?php include("../inc/gtm_noscript.html"); ?>
+	
+<!--ヘッダー-->
+<?php $Path = "./"; include("./inc/header.html"); ?>
+
+<!--グローバルナビ（SPでは固定フッターとして表示）-->
+<?php include("./inc/nav.html"); ?>
+
+<!--セール施策時表示-->
+<?php include("./inc/sale.html"); ?>
+
+<!--コンテンツ格納部分-->
+<main id="commerce">
+  
+<!--テンプレート-->
+<?php include("../inc/privacy.html"); ?>
+
+</main>
+
+<!--フッター-->
+<?php $Path = "./"; include("./inc/footer.html"); ?>
+</body>
+</html>

@@ -35,3 +35,9 @@ CRYPTO_SECRET_KEY = '0ZT0<_5Iz+I%n^x_?+J@0k1dUBys5z#,GDQZPAFuIoNhlqW9XLipmpZxJCe
 CORS_ALLOW_DOMAIN='http://localhost:3000'
 
 ENCRYPTION_SECRET_KEY = 'enc_secret'
+
+#FTP Configuration
+FTP_HOST_DEV=''
+FTP_USER_DEV=''
+FTP_PASSWORD_DEV=''
+FTP_SECURE_DEV=true

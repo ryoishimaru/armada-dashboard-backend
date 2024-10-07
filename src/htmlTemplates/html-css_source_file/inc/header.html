@@ -1,0 +1,36 @@
+﻿<!--サブドメインでも本サイトURLを使用可能に-->
+<script>
+  $(document).ready(function () {
+    document.cookie = 'shopid=202020; path=/; domain=.armada-style.com'  // cookie保存
+  });
+</script>
+
+<header>
+  <div class="row">
+	<div class="col-12">
+	<!--会員制注意文-->
+	<p style="color:#d00; padding:1% 2% 0;">当店のお客様専用の会員制通販ページです。会員登録ページのアドレスは当店スタッフまでお問い合わせください。</p>
+    </div>
+    <div class="col-6" id="logo"> <a href="<?php echo $Path; ?>"><img src="<?php echo $Path; ?>img/store_logo.png" style="max-width:100px;" alt="armada-style"></a> </div>
+    <div class="col-3" id="drawer">
+      <div class="nav_wrap">
+        <div class="drawer">
+          <div class="navbar_toggle"> <span class="navbar_toggle_icon"></span> <span class="navbar_toggle_icon"></span> <span class="navbar_toggle_icon"></span> </div>
+        </div>
+        <div class="nav_menu">
+          <ul>
+            <li id="navbar_btn">
+              <div class="navbar_toggle"> <span class="navbar_toggle_icon"></span> <span class="navbar_toggle_icon"></span> <span class="navbar_toggle_icon"></span> </div>
+            </li>
+            <li><a href="<?php echo $Path; ?>question.html">よくある質問</a></li>
+            <li><a href="<?php echo $Path; ?>guide.html">ご利用ガイド</a></li>
+			<li><a href="<?php echo $Path; ?>privacy.html">プライバシーポリシー</a></li>
+			<li><a href="<?php echo $Path; ?>commerce.html">特定商取引法の表記</a></li>
+            <li><a href="https://tokunaga-hair.com/" target="_blank">当店のホームページ</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-3" id="icon_wrap"> <a href="https://shop.armada-style.com/mypage/login.php"><img src="<?php echo $Path; ?>../common/img/icon_login.png" alt="LOG IN"></a> <a href="https://shop.armada-style.com/cart/" target="_blank"><img src="<?php echo $Path; ?>../common/img/icon_cart.png" alt="CART"></a> </div>
+  </div>
+</header>
