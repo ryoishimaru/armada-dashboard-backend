@@ -20,6 +20,8 @@ DB_PASSWORD=''
 DB_CHARSET ="utf8mb4"
 DB_TIMEZONE ="UTC"
 
+# Admin Default password
+ADMIN_DEFAULT_PASSWORD='$2a$10$zg1kCvIZwf2gfJal6JX2CuIB3LbvPX2GBQ4pSjphLqhDttCnZHN8q'
 
 #jwt constants
 JWT_SECRET_KEY = '4EBo5WQalhdA4=VH@8fU5gRYDKwc)/Zm|SRvrSeWY7UKCS]1j@Hz$@ptRITF]2N9<QuUp@7=I2f9s6k4dnh'

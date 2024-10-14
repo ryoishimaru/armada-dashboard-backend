@@ -19,11 +19,6 @@ const commonConstants = {
         NOT_DELETED: 0,
         LOGGED_IN: 1
     },
-    DEVICE_TYPE: {
-        ANDROID: 1,
-        IOS: 2,
-        WEBSITE: 3,
-    },
     DEFAULT_PAGINATION_LIMIT: 10
 
 };

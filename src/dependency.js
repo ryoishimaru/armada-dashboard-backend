@@ -19,7 +19,19 @@ container.register({
   responseHandler: asClass(require('~/middlewares/responseHandler')).singleton()
 });
 
-/* ================== salon Dependency Start ================== */
+/* ================== Super Admin Dependency Start ================== */
+
+// super admin auth module related classes
+container.register({
+  saAuthController: asClass(require('!/superAdmin/auth/controllers/authController')).singleton(),
+  saAuthService: asClass(require('!/superAdmin/auth/services/authService')).singleton(),
+  saAuthModel: asClass(require('!/superAdmin/auth/models/AuthModel')).singleton()
+});
+
+/* ================== Super Admin Dependency End ==================*/
+
+/* ================== Salon Dependency Start ================== */
+
 // Salon auth module related classes
 container.register({
   authController: asClass(require('!/salon/auth/controllers/authController')).singleton(),
@@ -33,6 +45,8 @@ container.register({
   webManagerService: asClass(require('!/salon/webManager/services/webManagerService')).singleton(),
   webManagerModel: asClass(require('!/salon/webManager/models/WebManagerModel')).singleton()
 });
+
+/* ================== Salon Dependency Start ================== */
 
 // Make the container available for other parts of your application
 module.exports = container;

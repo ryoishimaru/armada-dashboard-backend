@@ -7,6 +7,7 @@
  * @ShortDescription       This is responsible for table name constants
 */
 const tableConstants = {
-    USERS:"users"
+    SUPER_ADMIN:"superAdmin",
+    SALON:"salon"
 };
 export default tableConstants;

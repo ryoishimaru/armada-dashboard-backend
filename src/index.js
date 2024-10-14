@@ -2,6 +2,7 @@ import express from "express";
 var http = require('http');
 import bodyParser from "body-parser";
 import { salonRoutes } from '!/salon/routes';
+import { superAdminRoutes } from '!/superAdmin/routes';
 import { notFound } from "./middlewares/errorHandler";
 import Path from "path";
 import logger from "~/utils/logger";
@@ -40,6 +41,7 @@ app.use(
 /**
  * router managment for v1
  */
+app.use("/superAdmin", superAdminRoutes);
 app.use("/salon", salonRoutes);
 
 /*set error middleware*/

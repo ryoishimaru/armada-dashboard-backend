@@ -92,7 +92,7 @@ const decryptWithCrypto = function (encryptedText) {
  * @returns get login response
  */
 async function getLoginResponse(userData) {
-    const {id, device_id,} = userData;
+    const { id } = userData;
     let tokenData;
     // encrypt the user id
     const encryptUserId = encrypt(id)
@@ -100,8 +100,7 @@ async function getLoginResponse(userData) {
     let response = {};
 
     tokenData = {
-        "user_id": encryptUserId,
-        "device_id": device_id,
+        "user_id": encryptUserId
     };
 
     response.token = await JwtAuthSecurityObj.generateJwtToken(tokenData);

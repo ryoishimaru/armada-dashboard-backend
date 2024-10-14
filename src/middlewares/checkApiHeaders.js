@@ -19,9 +19,6 @@ const checkApiHeaders = async (req, res, next) => {
     }
 
     const requiredHeaders = [
-        { key: "device-id", message: "device id is missing." },
-        { key: "device-type", message: "device type is missing." },
-        { key: "device-token", message: "device token is missing." },
         { key: "api-key", message: "api access key is missing." }
     ];
     
@@ -43,15 +40,7 @@ const checkApiHeaders = async (req, res, next) => {
         return res.status(400).json(responseObj);
     }
 
-    const apiAccessKey = req.headers["api-key"],
-        deviceType = parseInt(req.headers["device-type"]);
-
-    
-    // Check device type
-    if (deviceType !== commonConstants.DEVICE_TYPE.ANDROID && deviceType !== commonConstants.DEVICE_TYPE.IOS && deviceType !== commonConstants.DEVICE_TYPE.WEBSITE) {
-        const responseObj = {"code": commonHelpers.getResponseCode('INVALID_DIVICE_TYPE')};
-        return res.status(400).json(responseObj);
-    }
+    const apiAccessKey = req.headers["api-key"];
 
     // check api access key
     if (api_key != apiAccessKey) {

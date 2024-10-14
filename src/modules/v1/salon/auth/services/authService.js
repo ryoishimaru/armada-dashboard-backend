@@ -16,18 +16,17 @@ class authService {
     }
 
     /*
-    Admin signup service
+    Salon signup service
     @requestData request body data
     @requestHeader request header data
     */
     async signupService(requestData, requestHeader) {
         try {
-            
             // signup functionality
             let wherQuery = { 'email': requestData.email.trim()};
             
             // fetch email
-            let getUserEmail = await this.authModel.fetchObjWithSingleRecord(wherQuery, "email", tableConstants.USERS);
+            let getUserEmail = await this.authModel.fetchObjWithSingleRecord(wherQuery, "email", tableConstants.SALON);
             
             // if email exist
             if (getUserEmail !== undefined) {
@@ -39,22 +38,16 @@ class authService {
 
             // user signup obj
             const userdDataObj = {
-                firstName: requestData.firstName.trim(),
-                lastName: requestData.lastName.trim(),
                 email: requestData.email.trim(),
                 password: await this.passwordHash.cryptPassword(requestData.password.trim()),
+                salonCode: requestData.salonCode,
                 createdAt: this.DateTimeUtil.getCurrentTimeObjForDB()
             }
 
             // create user
-            const [userId] = await this.authModel.createObj(userdDataObj, tableConstants.USERS);
+            const [userId] = await this.authModel.createObj(userdDataObj, tableConstants.SALON);
 
-            let getUserData = await this.authModel.fetchObjWithSingleRecord({id:userId}, "id,deviceId", tableConstants.USERS);
-
-            // reset headers
-            await this.commonHelpers.updateHeaderInfo(requestHeader, {id:getUserData.id}, tableConstants.USERS);
-
-            getUserData.device_id = requestHeader["device-id"];
+            let getUserData = await this.authModel.fetchObjWithSingleRecord({id:userId}, "id", tableConstants.SALON);
 
             // call helper function for get login response
             const responseData = await this.commonHelpers.getLoginResponse(getUserData);
@@ -74,7 +67,7 @@ class authService {
     }
 
     /*
-    Admin login service
+    Salon login service
     @requestData request body data
     @requestHeader request header data
     */
@@ -86,7 +79,7 @@ class authService {
             };
 
             // fetch the combination of email and password
-            let userData = await this.authModel.fetchObjWithSingleRecord(where, "id,email,password", tableConstants.USERS);
+            let userData = await this.authModel.fetchObjWithSingleRecord(where, "id,email,password", tableConstants.SALON);
           
             if (!userData) {
                 // user not found response
@@ -105,12 +98,6 @@ class authService {
                     code: await this.commonHelpers.getResponseCode('INVALID_LOGIN_CREDENTIALS')
                 };
             }
-
-            // reset headers
-            await this.commonHelpers.updateHeaderInfo(requestHeader, {id:userData.id}, tableConstants.USERS);
-
-            
-            userData.device_id = requestHeader["device-id"];
             
             //call helper function to get prepare login response
             const responseData = await this.commonHelpers.getLoginResponse(userData);
