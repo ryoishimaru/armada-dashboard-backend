@@ -18,6 +18,7 @@
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^2.1.1",
     "awilix": "^9.0.0",
+    "axios": "^1.7.7",
     "babel-plugin-root-import": "^6.6.0",
     "basic-ftp": "^5.0.5",
     "bcrypt": "^5.1.1",

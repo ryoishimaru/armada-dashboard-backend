@@ -11,7 +11,8 @@ container.register({
   checkApiHeaders: asValue(require("~/middlewares/checkApiHeaders")),
   jwtVerifyToken: asValue(require("~/middlewares/jwtVerifyToken")),
   JwtAuthSecurity: asClass(require('~/libraries/JwtAuthSecurity')).singleton(),
-  commonHelpers: asValue(require("~/helpers/commonHelpers").default)
+  commonHelpers: asValue(require("~/helpers/commonHelpers").default),
+  Email: asClass(require('~/libraries/Email')).singleton(),
 });
 
 // response handler file

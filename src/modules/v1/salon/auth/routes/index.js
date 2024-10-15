@@ -8,7 +8,9 @@ const auth = new Router();
 // Import the container
 const container = require('~/dependency'),
         authController = container.resolve("authController"),
-        checkApiHeaders = container.resolve("checkApiHeaders")
+        checkApiHeaders = container.resolve("checkApiHeaders"),
+        jwtVerifyToken = container.resolve("jwtVerifyToken")
+
 /*
 * create routes for signup method in authController
 */
@@ -18,5 +20,10 @@ auth.post('/signup', checkApiHeaders, signUpValidator, (req, res, next) => { aut
  * create routes for login method in authController
 */
 auth.post('/login', checkApiHeaders, loginValidator, (req, res, next) => { authController.login(req, res, next); });
+
+/*
+ * create routes for login method in authController
+*/
+auth.get('/confirm-signup', jwtVerifyToken, (req, res, next) => { authController.confirmSignup(req, res, next); });
 
 export { auth };

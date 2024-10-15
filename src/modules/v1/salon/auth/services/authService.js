@@ -1,27 +1,40 @@
 import { StatusCodes } from "http-status-codes";
 import tableConstants from '~/constants/tableConstants';
+import axios from "axios";
 
 /**
  * creating AuthModel object for access the database 
  */
 class authService {
 
-    constructor({ authModel, DateTimeUtil, passwordHash, logger, JwtAuthSecurity, commonHelpers }) {
+    constructor({ authModel, DateTimeUtil, passwordHash, logger, JwtAuthSecurity, Email, commonHelpers }) {
         this.authModel = authModel;
         this.DateTimeUtil = DateTimeUtil;
         this.passwordHash = passwordHash;
         this.logger = logger;
         this.JwtAuthSecurity = JwtAuthSecurity;
         this.commonHelpers = commonHelpers;
+        this.Email = Email;
     }
 
     /*
     Salon signup service
     @requestData request body data
-    @requestHeader request header data
+    @requestQuery request query data
     */
-    async signupService(requestData, requestHeader) {
+    async signupService(requestData, requestQuery) {
         try {
+
+            const salonCode = requestQuery.code;
+
+            // check if the salon code is provided in the query parameters            
+            if (!salonCode) {
+                return {
+                    status_code: StatusCodes.BAD_REQUEST,
+                    code: await this.commonHelpers.getResponseCode('SALON_CODE_REQUIRED')
+                };
+            }
+
             // signup functionality
             let wherQuery = { 'email': requestData.email.trim()};
             
@@ -35,31 +48,37 @@ class authService {
                     code: await this.commonHelpers.getResponseCode('EMAIL_EXIST')
                 };
             }
-
-            // user signup obj
-            const userdDataObj = {
-                email: requestData.email.trim(),
-                password: await this.passwordHash.cryptPassword(requestData.password.trim()),
-                salonCode: requestData.salonCode,
-                createdAt: this.DateTimeUtil.getCurrentTimeObjForDB()
+            
+            // fetch salon code
+            const isValidSalon = await this.validateSalonCodeService(requestQuery.code.trim());
+            
+            // if the salon code is invalid
+            if (!(isValidSalon?.status_code === StatusCodes.OK && isValidSalon?.code === await this.commonHelpers.getResponseCode('SALON_CODE_VALID'))) {
+                return {
+                    status_code: StatusCodes.BAD_REQUEST,
+                    code: await this.commonHelpers.getResponseCode('INVALID_SALON_CODE')
+                };
             }
 
-            // create user
-            const [userId] = await this.authModel.createObj(userdDataObj, tableConstants.SALON);
+            const tokenPayload = {
+              email: requestData.email.trim(),
+              salonCode,
+              password: await this.passwordHash.cryptPassword(
+                requestData.password.trim()
+              ),
+            };
 
-            let getUserData = await this.authModel.fetchObjWithSingleRecord({id:userId}, "id", tableConstants.SALON);
+            const token = this.JwtAuthSecurity.generateJwtToken(tokenPayload);
 
-            // call helper function for get login response
-            const responseData = await this.commonHelpers.getLoginResponse(getUserData);
+            const salonObj = {email:requestData.email.trim(), token}; 
+
+            await this.sendConfirmationEmail(salonObj);
 
             // return signup success response
             return {
                 status_code: StatusCodes.OK,
-                code: await this.commonHelpers.getResponseCode('SUCCESS'),
-                response: responseData
+                code: await this.commonHelpers.getResponseCode('SALON_CNF_TOKEN_SENT'),
             };
-           
-
         } catch (error) {
             this.logger.error(error);
             return error;
@@ -110,6 +129,164 @@ class authService {
             };
 
 
+        } catch (error) {
+            this.logger.error(error);
+            return error;
+        }
+    }
+
+    /*
+    Salon Code validation service
+    @salonCode salon code to validate
+    @return Promise<boolean> whether the salon code is valid or not
+    */
+    async validateSalonCodeService(salonCode) {
+        try {
+            // Fetch OAuth 2.0 token
+            const token = await this.getOAuthToken();
+    
+            // Prepare the request body
+            const requestBody = {
+                "search_options": {
+                    "member_code": salonCode.trim()
+                },
+                "response_options": {
+                    "response_type": "json",
+                    "charset": "UTF-8"
+                }
+            };
+
+            // Make the API call to validate salon code
+            const response = await axios.post(
+                'https://shop.armada-style.com/api/v2/members/search',
+                requestBody,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            // Check if the members array is not empty
+            const members = response.data?.response?.members;
+            if (response.data.success === 'ok' && Array.isArray(members) && members.length) {
+                // Salon code exists
+                return {
+                    status_code: StatusCodes.OK,
+                    code: await this.commonHelpers.getResponseCode('SALON_CODE_VALID'),
+                    data: response.data
+                };
+            } else {
+                // Salon code does not exist
+                return {
+                    status_code: StatusCodes.NOT_FOUND,
+                    code: await this.commonHelpers.getResponseCode('INVALID_SALON_CODE')
+                };
+            }
+        } catch (error) {
+            this.logger.error(`Unknown Error: ${error.message}`);
+            return error;
+        }
+    }
+
+    /*
+    OAuth Token Retrieval Service
+    @return Promise<string> OAuth 2.0 access token
+    */
+    async getOAuthToken() {
+        try {
+            const tokenUrl = 'https://shop.armada-style.com/api/oauth/token.php';
+    
+            // Request body for token request
+            const tokenRequestData = {
+                grant_type: 'client_credentials',
+                code: '2322',
+                client_id: process.env.RAKU2BBC_CLIENT_ID,
+                client_secret: process.env.RAKU2BBC_CLIENT_SECRET
+            };
+    
+            // Make the POST request to fetch the token
+            const response = await axios.post(tokenUrl, tokenRequestData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            // Return the access token
+            return response.data.access_token;
+    
+        } catch (error) {
+            // Log and handle error
+            this.logger.error(`Error fetching OAuth token: ${error.message}`);
+            return error;
+        }
+    }
+
+    /*
+    Send confirmation email
+   */
+    async sendConfirmationEmail(salonObj) {
+        try {
+            const confirmationLink = `${process.env.ASSETS_URL_BASE}/salon/v1/confirm-signup?token=${salonObj.token}`;
+            /* send verification link start */
+            const mail_options = {
+                subject: 'Confirmation Link',
+                to: [{ address: salonObj.email }],
+                template: 'sendConfirmationLink',
+                context: {
+                    confirmationLink,
+                    websiteUrl: process.env.ASSETS_URL_BASE,
+                    baseUrl: process.env.ASSETS_URL_BASE
+                }
+            };
+
+            return await this.Email.sendEmail(mail_options)
+            /* send verification link ends */
+
+        } catch (error) {
+            this.logger.error(error);
+            return error;
+        }
+    }
+
+    async confirmSignupService(reqUser) {
+        try {
+
+            let wherQuery = { 'email': reqUser.email};
+
+            // fetch email
+            let getUserEmail = await this.authModel.fetchObjWithSingleRecord(wherQuery, "email", tableConstants.SALON);
+            
+            // if email exist
+            if (getUserEmail !== undefined) {
+                return {
+                    status_code: StatusCodes.BAD_REQUEST,
+                    code: await this.commonHelpers.getResponseCode('EMAIL_EXIST')
+                };
+            }
+
+            // user signup obj
+            const userdDataObj = {
+                email: reqUser.email,
+                password: reqUser.password,
+                salonCode: reqUser.salonCode,
+                createdAt: this.DateTimeUtil.getCurrentTimeObjForDB()
+            }
+
+            // create user
+            const [userId] = await this.authModel.createObj(userdDataObj, tableConstants.SALON);
+
+            let getUserData = await this.authModel.fetchObjWithSingleRecord({id:userId}, "id", tableConstants.SALON);
+
+            // call helper function for get login response
+            const responseData = await this.commonHelpers.getLoginResponse(getUserData);
+
+            // return signup success response
+            return {
+                status_code: StatusCodes.OK,
+                code: await this.commonHelpers.getResponseCode('SUCCESS')
+            };
         } catch (error) {
             this.logger.error(error);
             return error;

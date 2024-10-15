@@ -27,20 +27,10 @@ const schema = {
                 maxLength: 'Password should be a maximum of 12 characters.',
                 pattern: 'Password must contain at least one uppercase, lowercase, number, and a special character.'
             },
-        },
-        salonCode: {
-            type: "string",
-            minLength:1,
-            maxLength: 60,
-            errorMessage: {
-                type: 'The salon code field must be a string',
-                minLength: 'Must have required property salon code',
-                maxLength: 'salon code may have maximum 30 characters.'
-            },
         }
     },
 
-    required: ["email", "password", "salonCode"], //set required paramenter
+    required: ["email", "password"], //set required paramenter
     additionalProperties: true, //make addition parameter allow in request body by makeing additionalProperties =true 
 };
 
