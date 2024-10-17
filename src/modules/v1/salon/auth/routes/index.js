@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { signUpValidator } from "!/salon/auth/validators/signUpValidator";
 import { loginValidator } from "!/salon/auth/validators/loginValidator";
+import { resetPasswordValidator } from "!/salon/auth/validators/resetPasswordValidator";
+import { updatePassworddValidator } from "!/salon/auth/validators/updatePassworddValidator";
+
 
 // create object for auth controller routes
 const auth = new Router();
@@ -25,5 +28,15 @@ auth.post('/login', checkApiHeaders, loginValidator, (req, res, next) => { authC
  * create routes for login method in authController
 */
 auth.get('/confirm-signup', jwtVerifyToken, (req, res, next) => { authController.confirmSignup(req, res, next); });
+
+/*
+ * create routes for request reset password method in authController
+*/
+auth.post('/request-reset-password', resetPasswordValidator, (req, res, next) => { authController.requestResetPassword(req, res, next); });
+
+/*
+ * create routes for reset password method in authController
+*/
+auth.post('/reset-password', jwtVerifyToken, updatePassworddValidator, (req, res, next) => { authController.resetPassword(req, res, next); });
 
 export { auth };

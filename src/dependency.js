@@ -29,6 +29,13 @@ container.register({
   saAuthModel: asClass(require('!/superAdmin/auth/models/AuthModel')).singleton()
 });
 
+// super admin product module related classes
+container.register({
+  saProductController: asClass(require('!/superAdmin/product/controllers/productController')).singleton(),
+  saProductService: asClass(require('!/superAdmin/product/services/productService')).singleton(),
+  saProductModel: asClass(require('!/superAdmin/product/models/ProductModel')).singleton()
+});
+
 /* ================== Super Admin Dependency End ==================*/
 
 /* ================== Salon Dependency Start ================== */

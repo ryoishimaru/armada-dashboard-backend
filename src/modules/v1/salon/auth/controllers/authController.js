@@ -19,7 +19,19 @@ class authController {
 
     // Confirm signup controller
     async confirmSignup(req, res, next) {
-        const returnData = await this.authService.confirmSignupService(req.user);
+        const returnData = await this.authService.confirmSignupService(req.user, res);
+        await this.responseHandler.handleServiceResponse(req, res, returnData);
+    }
+
+    // Request reset password controller
+    async requestResetPassword(req, res, next) {
+        const returnData = await this.authService.requestResetPasswordService(req.body);
+        await this.responseHandler.handleServiceResponse(req, res, returnData);
+    }
+
+    // Reset password controller
+    async resetPassword(req, res, next) {
+        const returnData = await this.authService.resetPasswordService(req.user, req.body);
         await this.responseHandler.handleServiceResponse(req, res, returnData);
     }
 }

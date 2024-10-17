@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    image: armadabackend
+    build: .
+    ports:
+      - "5500:5500"  # Map the container port 5500 to the host machine port 5500
+    environment:
+      DB_CLIENT: mysql
+      DB_HOST: mysql  # Change localhost to mysql (service name)
+      DB_USER: root
+      DB_PASSWORD: newroot  # Set a root password
+      DB_NAME: armada_dev_db
+      DB_NAME_TEST: armada_test
+      DB_CHARSET: utf8mb4
+      DB_TIMEZONE: UTC
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: newroot  # Set a root password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql  # Correct the path for MySQL data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh  # Mount the custom init script
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+
+

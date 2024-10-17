@@ -38,14 +38,25 @@ class authService {
             // signup functionality
             let wherQuery = { 'email': requestData.email.trim()};
             
-            // fetch email
-            let getUserEmail = await this.authModel.fetchObjWithSingleRecord(wherQuery, "email", tableConstants.SALON);
+            // fetch user email
+            let userEmail = await this.authModel.fetchObjWithSingleRecord(wherQuery, "email", tableConstants.SALON);
             
             // if email exist
-            if (getUserEmail !== undefined) {
+            if (userEmail!==undefined) {
                 return {
                     status_code: StatusCodes.BAD_REQUEST,
                     code: await this.commonHelpers.getResponseCode('EMAIL_EXIST')
+                };
+            }
+
+            // fetch salon code
+            let isSalonCode = await this.authModel.fetchObjWithSingleRecord({salonCode}, "salonCode", tableConstants.SALON);
+
+            // if salon code exist
+            if (isSalonCode!==undefined) {
+                return {
+                    status_code: StatusCodes.BAD_REQUEST,
+                    code: await this.commonHelpers.getResponseCode('SALON_CODE_EXIST')
                 };
             }
             
@@ -223,9 +234,11 @@ class authService {
         }
     }
 
-    /*
-    Send confirmation email
-   */
+    /**
+    Send Confirmation Email Service
+    @param {Object} salonObj - The salon object containing the email and token for the confirmation.
+    @returns {Promise<Object>} - Returns the result of the email sending process.
+    */
     async sendConfirmationEmail(salonObj) {
         try {
             const confirmationLink = `${process.env.ASSETS_URL_BASE}/salon/v1/confirm-signup?token=${salonObj.token}`;
@@ -250,7 +263,12 @@ class authService {
         }
     }
 
-    async confirmSignupService(reqUser) {
+    /**
+    User Signup Confirmation Service
+    @param {Object} reqUser - The user request object containing email, password, and salonCode.
+    @returns {Promise<Object>} - Returns the signup response with a status code and result code.
+    */
+    async confirmSignupService(reqUser,res) {
         try {
 
             let wherQuery = { 'email': reqUser.email};
@@ -275,17 +293,102 @@ class authService {
             }
 
             // create user
-            const [userId] = await this.authModel.createObj(userdDataObj, tableConstants.SALON);
+            await this.authModel.createObj(userdDataObj, tableConstants.SALON);
 
-            let getUserData = await this.authModel.fetchObjWithSingleRecord({id:userId}, "id", tableConstants.SALON);
+            res.redirect('http://localhost:5173/signin');
+        } catch (error) {
+            this.logger.error(error);
+            return error;
+        }
+    }
 
-            // call helper function for get login response
-            const responseData = await this.commonHelpers.getLoginResponse(getUserData);
+    /*
+    Request reset password service
+    @requestData request body data
+    */
+    async requestResetPasswordService(requestData) {
+        try {
 
-            // return signup success response
+            // set where condition for check exist 
+            const where = {
+                'email': requestData.email
+            };
+
+            // fetch the email
+            let userData = await this.authModel.fetchObjWithSingleRecord(where, "email", tableConstants.SALON);
+          
+            if (!userData) {
+                // user not found response
+                return {
+                    status_code: StatusCodes.BAD_REQUEST,
+                    code: await this.commonHelpers.getResponseCode('EMAIL_DONOT_EXIST')
+                };
+            }
+
+            // Create a JWT token with user email
+            const resetToken = this.JwtAuthSecurity.generateJwtToken({email: userData.email});
+
+            // Generate reset URL (including the JWT token)
+            const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+
+            // Set up email sending
+            const mail_options = {
+                subject: 'Password Reset Link',
+                to: [{ address: userData.email }],
+                template: 'sendResetPasswordLink',
+                context: {
+                    resetUrl,
+                    websiteUrl: process.env.ASSETS_URL_BASE,
+                    baseUrl: process.env.ASSETS_URL_BASE
+                }
+            };
+
+            // Send the reset password email
+            await this.Email.sendEmail(mail_options)
+
+            // return success response
             return {
                 status_code: StatusCodes.OK,
-                code: await this.commonHelpers.getResponseCode('SUCCESS')
+                code: await this.commonHelpers.getResponseCode('SUCCESS'),
+            };
+        } catch (error) {
+            this.logger.error(error);
+            return error;
+        }
+    }
+
+    /*
+    Reset password service
+    @requestData request body data
+    */
+    async resetPasswordService(reqUser, requestData) {
+        try {
+            const { newPassword } = requestData;
+
+            // set where condition for check exist 
+            const where = {
+                'email': reqUser.email
+            };
+
+            // fetch the email
+            let userData = await this.authModel.fetchObjWithSingleRecord(where, "email", tableConstants.SALON);
+
+            if (!userData) {
+            // user not found response
+                return {
+                    status_code: StatusCodes.BAD_REQUEST,
+                    code: await this.commonHelpers.getResponseCode('EMAIL_DONOT_EXIST')
+                };
+            }
+
+            const cryptedPassword = await this.passwordHash.cryptPassword(newPassword.trim());
+            
+            await this.authModel.updateObj({password:cryptedPassword},where,tableConstants.SALON);
+
+            // return success response
+            return {
+                status_code: StatusCodes.OK,
+                code: await this.commonHelpers.getResponseCode('SUCCESS'),
             };
         } catch (error) {
             this.logger.error(error);
