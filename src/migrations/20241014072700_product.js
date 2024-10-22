@@ -9,7 +9,6 @@ exports.up = function (knex) {
       table.string("detailedName", 150).notNullable();
       table.decimal("minPrice", 10, 2).notNullable();
       table.decimal("maxPrice", 10, 2).notNullable();
-      table.string("image", 100).notNullable();
       table.string("htmlFileName", 100).notNullable();
       table.dateTime("createdAt").notNullable();
     });

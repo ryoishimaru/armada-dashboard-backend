@@ -28,38 +28,8 @@ const jwtVerifyToken = async (req, res, next) => {
     }
 
     try {
-        /*verify token and add user key in response */
         const decoded = Jwt.verify(token, secretKey);
         req.user = decoded;
-        
-        /**
-        // fetch device id from DB
-        const userId = await commonHelpers.decrypt(decoded.user_id);
-
-        const deviceId = await baseModelObj.fetchObjWithSingleRecord({ 'id': userId }, ['deviceId'], tableConstants.SALON);
-        
-        // check divice specific check if header divice id and token divice id not match then set invalid token
-        if (decoded.device_id != deviceId.deviceId) {
-            const responseObj = {
-                "code": commonHelpers.getResponseCode('INVALID_TOKEN'),
-            };
-            return res.status(401).json(responseObj);
-        }
-        // set user data in request data
-        req.user = decoded;
-       
-        // check user login with current divice id 
-        const isValid = await commonServceObj.checkValidUserLogin(req, tableConstants.SALON);
-
-        // if user not login wih current divice id res response for invalid token
-        if (!isValid) {
-
-            const responseObj = {
-                "code": commonHelpers.getResponseCode('INVALID_TOKEN'),
-            };
-            return res.status(401).json(responseObj);
-        }
-        */
     } catch (err) {
         /*return error message when token not valid  */
         const responseObj = {

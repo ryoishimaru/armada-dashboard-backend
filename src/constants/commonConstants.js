@@ -19,8 +19,12 @@ const commonConstants = {
         NOT_DELETED: 0,
         LOGGED_IN: 1
     },
+    PRODUCT: {
+        MAX_ALLOW_FILE_SIZE: 10485760, // 10MB
+        ALLOW_EXTENSIONS: [".jpg", ".jpeg", ".gif", ".png", ".webp"],
+        FILE_UPLOAD_PATH: "product"
+    },
     DEFAULT_PAGINATION_LIMIT: 10
-
 };
 
 export default commonConstants;

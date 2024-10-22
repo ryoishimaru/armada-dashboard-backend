@@ -13,6 +13,7 @@ container.register({
   JwtAuthSecurity: asClass(require('~/libraries/JwtAuthSecurity')).singleton(),
   commonHelpers: asValue(require("~/helpers/commonHelpers").default),
   Email: asClass(require('~/libraries/Email')).singleton(),
+  FileUpload: asClass(require('~/libraries/FileUpload')).singleton()
 });
 
 // response handler file

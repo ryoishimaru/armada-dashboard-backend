@@ -295,7 +295,10 @@ class authService {
             // create user
             await this.authModel.createObj(userdDataObj, tableConstants.SALON);
 
-            res.redirect('http://localhost:5173/signin');
+            return {
+                status_code: StatusCodes.OK,
+                code: await this.commonHelpers.getResponseCode('SUCCESS'),
+            };
         } catch (error) {
             this.logger.error(error);
             return error;

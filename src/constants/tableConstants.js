@@ -9,6 +9,7 @@
 const tableConstants = {
     SUPER_ADMIN:"superAdmin",
     SALON:"salon",
-    PRODUCT:"product"
+    PRODUCT:"product",
+    PRODUCT_IMG_MAPPING:"product_images_mapping"
 };
 export default tableConstants;

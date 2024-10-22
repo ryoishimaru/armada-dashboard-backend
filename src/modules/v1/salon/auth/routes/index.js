@@ -32,11 +32,11 @@ auth.get('/confirm-signup', jwtVerifyToken, (req, res, next) => { authController
 /*
  * create routes for request reset password method in authController
 */
-auth.post('/request-reset-password', resetPasswordValidator, (req, res, next) => { authController.requestResetPassword(req, res, next); });
+auth.post('/request-reset-password', checkApiHeaders, resetPasswordValidator, (req, res, next) => { authController.requestResetPassword(req, res, next); });
 
 /*
  * create routes for reset password method in authController
 */
-auth.post('/reset-password', jwtVerifyToken, updatePassworddValidator, (req, res, next) => { authController.resetPassword(req, res, next); });
+auth.post('/reset-password', checkApiHeaders, jwtVerifyToken, updatePassworddValidator, (req, res, next) => { authController.resetPassword(req, res, next); });
 
 export { auth };

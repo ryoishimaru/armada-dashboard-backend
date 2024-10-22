@@ -26,6 +26,7 @@ app.use('/api-doc', swaggerUI.serve, swaggerUI.setup(swaggerDefination));
 app.use(bodyParser.urlencoded({ extended: false }));
 //parse application/json
 app.use(bodyParser.json());
+app.use('/product', express.static('uploads/product'));
 // set path for public folder
 app.use(express.static(Path.join(__dirname, 'public')));
 

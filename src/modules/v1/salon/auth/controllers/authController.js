@@ -19,8 +19,8 @@ class authController {
 
     // Confirm signup controller
     async confirmSignup(req, res, next) {
-        const returnData = await this.authService.confirmSignupService(req.user, res);
-        await this.responseHandler.handleServiceResponse(req, res, returnData);
+        await this.authService.confirmSignupService(req.user, res);
+        await res.redirect('http://localhost:5173/signin');
     }
 
     // Request reset password controller
