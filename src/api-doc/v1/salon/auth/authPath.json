@@ -1,0 +1,432 @@
+{
+  "components": {
+    "signup": {
+      "summary": "Salon Signup API.",
+      "description": "Register a salon",
+      "tags": ["Salon Auth"],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "parameters": [
+        {
+          "in": "query",
+          "name": "code",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "example": "001855"
+          },
+          "description": "The salon registration code."
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": ["email", "password"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "Enter unique email of user (Min-5,Max-100).",
+                  "example": "jhon@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Enter password that contain at least one uppercase, lowercase, number, and a special character (Min-6,Max-12).",
+                  "example": "Anything#12"
+                }
+              }
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "When salon signup successfully.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "data": {
+                    "type": "object",
+                    "example": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Validation errors.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "errors": {
+                        "type": "array",
+                        "example": ["api access key is missing."]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 105
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Invalid email format."
+                      },
+                      "data": {
+                        "type": "object",
+                        "example": {
+                          "fields": {
+                            "email": ["Invalid email format."]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "description": "When email already used",
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 112
+                      },
+                      "data": {}
+                    }
+                  },
+                  {
+                    "description": "When salon code is invalid",
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 115
+                      },
+                      "data": {}
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "login": {
+      "summary": "Salon Login API.",
+      "description": "Authenticates a user and returns an access token",
+      "tags": ["Salon Auth"],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "requestBody": {
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": ["email", "password"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "Enter email.",
+                  "example": "user.salon@armada.com"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Enter password.",
+                  "example": "Salon@123"
+                }
+              }
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "When user login successfully.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "data": {
+                    "type": "object",
+                    "example": {
+                      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoibGVqUmVqIiwiaWF0IjoxNzEzNTk1MzcwLCJleHAiOjE3MTYxODczNzB9.kSZ5KQN8m8tjEAF7l_-IgrKnlsrhwU97qC_x-kabwSw"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Invalid Api Key",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "integer",
+                    "example": 102
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Validation errors.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "errors": {
+                        "type": "array",
+                        "example": ["api access key is missing."]
+                      }
+                    }
+                  },
+                  {
+                    "description": "Validation errors.",
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 105
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Invalid email format."
+                      },
+                      "data": {
+                        "type": "object",
+                        "example": {
+                          "fields": {
+                            "email": ["Invalid email format."]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "description": "When entered email & password not match.",
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 111
+                      },
+                      "data": {}
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "request-reset-password": {
+      "summary": "Request reset password API.",
+      "description": "Request reset password",
+      "tags": ["Salon Auth"],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "requestBody": {
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": ["email"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "Enter email.",
+                  "example": "jhon@gmail.com"
+                }
+              }
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "When reset password link sent successfully.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "data": {
+                    "type": "object",
+                    "example": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Validation errors.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "errors": {
+                        "type": "array",
+                        "example": ["api access key is missing."]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 105
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Invalid email format."
+                      },
+                      "data": {
+                        "type": "object",
+                        "example": {
+                          "fields": {
+                            "email": ["Invalid email format."]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "description": "When email does not exist",
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 120
+                      },
+                      "data": {}
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "reset-password": {
+      "summary": "Reset password API.",
+      "description": "Reset password",
+      "tags": ["Salon Auth"],
+      "consumes": ["application/json"],
+      "produces": ["application/json"],
+      "requestBody": {
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "required": ["newPassword"],
+              "properties": {
+                "newPassword": {
+                  "type": "string",
+                  "description": "Enter new password.",
+                  "example": "#NewPass450"
+                }
+              }
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "When password changed successfully.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "data": {
+                    "type": "object",
+                    "example": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Validation errors.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "code": {
+                        "type": "integer",
+                        "example": 100
+                      },
+                      "errors": {
+                        "type": "array",
+                        "example": ["api access key is missing."]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

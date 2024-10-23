@@ -1,0 +1,670 @@
+{
+    "components": {
+      "save-product": {
+        "summary": "Save Product API.",
+        "description": "Add/Update a product",
+        "tags": ["SuperAdmin Auth"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "detailedName",
+                  "minPrice",
+                  "maxPrice",
+                  "htmlFileName"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Enter product name (Max-100).",
+                    "example": "Exfoliating Body Scrub"
+                  },
+                  "detailedName": {
+                    "type": "string",
+                    "description": "Enter detailed name (Max-150).",
+                    "example": "A body scrub that exfoliates dead skin cells and leaves skin smooth and soft."
+                  },
+                  "minPrice": {
+                    "type": "string",
+                    "description": "Enter min price.",
+                    "example": "29.99"
+                  },
+                  "maxPrice": {
+                    "type": "string",
+                    "description": "Enter max price.",
+                    "example": "49.99"
+                  },
+                  "htmlFileName": {
+                    "type": "string",
+                    "description": "Enter html file name.",
+                    "example": "some.html"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Upload an product image file."
+                  },
+                  "productId": {
+                    "type": "string",
+                    "description": "Enter product ID (required only for updates).",
+                    "example": "lejRej"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "When product added/updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Api Key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 102
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A token is required for authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 103
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "errors": {
+                          "type": "array",
+                          "example": ["api access key is missing."]
+                        }
+                      }
+                    },
+                    {
+                      "description": "Validation errors.",
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 105
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Product name may have maximum 100 characters."
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "example": "Product name may have maximum 100 characters."
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "description": "When product image is required.",
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 121
+                        },
+                        "data": {}
+                      }
+                    },
+                    {
+                      "description": "When product image size is invalid.",
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 122
+                        },
+                        "data": {}
+                      }
+                    },
+                    {
+                      "description": "When product image extension is invalid.",
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 123
+                        },
+                        "data": {}
+                      }
+                    },
+                    {
+                      "description": "When product id is invalid.",
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 124
+                        },
+                        "data": {}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get-product-list": {
+        "summary": "Product List API.",
+        "description": "This API used to display product list.",
+        "tags": ["SuperAdmin Auth"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageNo",
+            "description": "page no",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "When product list displayed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 200
+                        },
+                        "data": {
+                          "type": "object",
+                          "example": {
+                            "productList": [
+                              {
+                                "id": "Qe1RaJ",
+                                "name": "product 1",
+                                "detailedName": "product 1",
+                                "minPrice": 2220,
+                                "maxPrice": 330,
+                                "htmlFileName": "product.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg9a0sm2lkbko2.jpg"
+                                ]
+                              },
+                              {
+                                "id": "QeZJep",
+                                "name": "product 1",
+                                "detailedName": "product 1",
+                                "minPrice": 200,
+                                "maxPrice": 300,
+                                "htmlFileName": "product.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg95z5m2lk8mrq.jpg"
+                                ]
+                              },
+                              {
+                                "id": "1aMAaW",
+                                "name": "Anti-Aging Face Seru",
+                                "detailedName": "A serum with retinol and peptides that reduces the appearance of fine lines and wrinkles.",
+                                "minPrice": 29.99,
+                                "maxPrice": 49.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg95z5m2lif3kc.jpg"
+                                ]
+                              },
+                              {
+                                "id": "oeEva0",
+                                "name": "Anti-Aging Face Seru",
+                                "detailedName": "A serum with retinol and peptides that reduces the appearance of fine lines and wrinkles.",
+                                "minPrice": 29.99,
+                                "maxPrice": 49.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg95z5m2liei8l.jpg"
+                                ]
+                              },
+                              {
+                                "id": "DbDxbl",
+                                "name": "Soothing Aloe Vera Gel",
+                                "detailedName": "A cooling aloe vera gel that soothes irritated and sunburned skin.",
+                                "minPrice": 7.99,
+                                "maxPrice": 14.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg9qljm2ke1b77.jpg",
+                                  "http://localhost:5500/product/10acg9qljm2ke1b78.jpg",
+                                  "http://localhost:5500/product/10acg9qljm2ke1b79.webp"
+                                ]
+                              },
+                              {
+                                "id": "kazYeJ",
+                                "name": "Soothing Aloe Vera Gel",
+                                "detailedName": "A cooling aloe vera gel that soothes irritated and sunburned skin.",
+                                "minPrice": 7.99,
+                                "maxPrice": 14.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg9h03m2k9m0yo.webp",
+                                  "http://localhost:5500/product/10acg9h03m2k9m0yp.jpg",
+                                  "http://localhost:5500/product/10acg9h03m2k9m0yq.jpg",
+                                  "http://localhost:5500/product/10acg9h03m2k9m0yr.jpg",
+                                  "http://localhost:5500/product/10acg9h03m2k9m0ys.jpg",
+                                  "http://localhost:5500/product/10acg9h03m2k9m0yt.jpg"
+                                ]
+                              },
+                              {
+                                "id": "Pdy7aQ",
+                                "name": "Soothing Aloe Vera Gel",
+                                "detailedName": "A cooling aloe vera gel that soothes irritated and sunburned skin.",
+                                "minPrice": 7.99,
+                                "maxPrice": 14.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg9qljm2ke0fd3.jpg",
+                                  "http://localhost:5500/product/10acg9qljm2ke0fd4.jpg",
+                                  "http://localhost:5500/product/10acg9qljm2ke0fd5.webp"
+                                ]
+                              },
+                              {
+                                "id": "7ax9by",
+                                "name": "Exfoliating Body Scrub",
+                                "detailedName": "A body scrub that exfoliates dead skin cells and leaves skin smooth and soft.",
+                                "minPrice": 14.99,
+                                "maxPrice": 24.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg9h03m2k9imlh.jpg"
+                                ]
+                              },
+                              {
+                                "id": "DdwRb1",
+                                "name": "Vitamin E Night Cream",
+                                "detailedName": "A nourishing night cream enriched with Vitamin E to repair and hydrate skin overnight.",
+                                "minPrice": 17.99,
+                                "maxPrice": 28.99,
+                                "htmlFileName": "some.html",
+                                "images": [
+                                  "http://localhost:5500/product/10acg9h03m2k9h0kt.jpg"
+                                ]
+                              }
+                            ],
+                            "loadMore": true,
+                            "count": 10
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 200
+                        },
+                        "data": {
+                          "type": "object",
+                          "example": {
+                            "productList": [],
+                            "loadMore": false,
+                            "count": 10
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "errors": {
+                          "type": "array",
+                          "example": ["api access key is missing."]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Api Key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 102
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A token is required for authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 103
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get-product-details": {
+        "summary": "Product Detail API.",
+        "description": "This API used to display product details.",
+        "tags": ["SuperAdmin Auth"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "description": "productId (encrypted)",
+            "schema": {
+              "type": "string",
+              "example": "lejRej"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "When product details displayed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "example": {
+                        "id": "oeEva0",
+                        "name": "Anti-Aging Face Seru",
+                        "detailedName": "A serum with retinol and peptides that reduces the appearance of fine lines and wrinkles.",
+                        "minPrice": 29.99,
+                        "maxPrice": 49.99,
+                        "htmlFileName": "some.html",
+                        "images": [
+                          "http://localhost:5500/product/10acg95z5m2liei8l.jpg"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "errors": {
+                          "type": "array",
+                          "example": [
+                            "api access key is missing."
+                          ]
+                        }
+                      }
+                    },
+                    {
+                        "description": "When product id is invalid.",
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "integer",
+                            "example": 124
+                          },
+                          "data": {}
+                        }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Api Key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "description": "Invalid Api Key",
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer",
+                          "example": 102
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete-product": {
+            "summary": "Delete product API.",
+            "description": "This API use to delete product.",
+            "tags": ["SuperAdmin Auth"],
+            "produces": ["application/json"],
+            "parameters": [
+                {
+                  "in": "path",
+                  "name": "productId",
+                  "required": true,
+                  "description": "productId (encrypted)",
+                  "schema": {
+                    "type": "string",
+                    "example": "lejRej"
+                  }
+                }
+            ],
+            "responses": {
+              "200": {
+                "description": "When product deleted successfully.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer",
+                                "example": 200
+                            },
+                            "data": {
+                                "type": "object",
+                                "example": {}
+                            }
+                        }
+                    }
+                  }
+                }
+              },
+              "400": {
+                "description": "Validation errors.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "oneOf": [
+                        {
+                          "properties": {
+                            "code": {
+                              "type": "integer",
+                              "example": 100
+                            },
+                            "errors": {
+                              "type": "array",
+                              "example": [
+                                    "api access key is missing."
+                              ]
+                            }
+                          }
+                        },
+                        {
+                            "description": "When product id is invalid",
+                            "type": "object",
+                            "properties": {
+                                "code":{
+                                    "type":"integer",
+                                    "example": 124
+                                    },
+                                "data": {}
+                            }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "401": {
+                "description": "Invalid Api Key or token",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "oneOf": [
+                                {
+                                    "description": "Invalid Api Key",
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 102
+                                        }
+                                    }
+                                },
+                                {
+                                    "description": "Invalid token",
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 104
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+              },
+              "403": {
+                "description": "A token is required for authentication",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "integer",
+                                    "example": 103
+                                }
+                            }
+                        }
+                    }
+                }
+              }
+            }
+      }
+    }
+}

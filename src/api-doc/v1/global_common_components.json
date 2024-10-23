@@ -1,8 +1,12 @@
 {
   "tags": [
     {
-      "name": "Auth",
-      "description": "This is an auth module."
+      "name": "SuperAdmin Auth",
+      "description": "This is an super admin auth module."
+    },
+    {
+      "name": "Salon Auth",
+      "description": "This is an salon auth module."
     }
   ]
 }

@@ -14,19 +14,31 @@
             "ApiKeyAuth": []
         },
         {
-            "DeviceId": []
-        },
-        {
-            "DeviceType": []
-        },
-        {
-            "DeviceToken": []
-        },
-        {
             "AccessToken": []
         }
     ],
     "paths": {
+        "/superAdmin/v1/login": {
+            "post": {
+                "$ref": "././superAdmin/auth/authPath.json#/components/sa-login"
+            }
+        },
+        "/superAdmin/v1/product": {
+            "post": {
+                "$ref": "././superAdmin/product/productPath.json#/components/save-product"
+            },
+            "get": {
+                "$ref": "././superAdmin/product/productPath.json#/components/get-product-list"
+            }
+        },
+        "/superAdmin/v1/product/{productId}": {
+            "get": {
+                "$ref": "././superAdmin/product/productPath.json#/components/get-product-details"
+            },
+            "delete": {
+                "$ref": "././superAdmin/product/productPath.json#/components/delete-product"
+            }
+        },
         "/salon/v1/signup": {
             "post": {
                 "$ref": "././salon/auth/authPath.json#/components/signup"
@@ -35,6 +47,16 @@
         "/salon/v1/login": {
             "post": {
                 "$ref": "././salon/auth/authPath.json#/components/login"
+            }
+        },
+        "/salon/v1/request-reset-password": {
+            "post": {
+                "$ref": "././salon/auth/authPath.json#/components/request-reset-password"
+            }
+        },
+        "/salon/v1/reset-password": {
+            "post": {
+                "$ref": "././salon/auth/authPath.json#/components/reset-password"
             }
         }
     },
@@ -48,24 +70,6 @@
                 "in": "header",
                 "name": "api-key",
                 "description": "Example value: m2E7FFKm3v8e!xCxj|6RAC87lMA2wOFXt8i3HX&klH}?{556dc1kwyllokWzqeKw&kH}?{j7UuFXn55BE508zy7gEHNMx"
-            },
-            "DeviceId": {
-                "type": "apiKey",
-                "in": "header",
-                "name": "device-id",
-                "description": "Example value: 12345"
-            },
-            "DeviceType": {
-                "type": "apiKey",
-                "in": "header",
-                "name": "device-type",
-                "description": "Example value: (1:Android, 2:iOS, 3:Web)"
-            },
-            "DeviceToken": {
-                "type": "apiKey",
-                "in": "header",
-                "name": "device-token",
-                "description": "Example value: abcxyz"
             },
             "AccessToken": {
                 "type": "apiKey",

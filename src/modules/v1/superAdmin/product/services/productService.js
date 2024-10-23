@@ -30,18 +30,20 @@ class productService {
       };
 
       // Checking if the file is present
-      if(!requestFiles) return await this.commonHelpers.prepareResponse(StatusCodes.BAD_REQUEST, 'PRODUCT_IMG_REQUIRED');
+      if(!requestdata.productId){
+        if(!requestFiles) return await this.commonHelpers.prepareResponse(StatusCodes.BAD_REQUEST, 'PRODUCT_IMG_REQUIRED');
+        // Validate the file
+        if (!Array.isArray(requestFiles.image)) {
+            const error = await this.validateProductImg(requestFiles.image);
+            if (error) return error;
+        } else {
+            for (const element of requestFiles.image) {
+                const error = await this.validateProductImg(element);
+                if (error) return error;
+            }
+        }
+     }
 
-      // Validate the file
-      if (!Array.isArray(requestFiles.image)) {
-          const error = await this.validateProductImg(requestFiles.image);
-          if (error) return error;
-      } else {
-          for (const element of requestFiles.image) {
-              const error = await this.validateProductImg(element);
-              if (error) return error;
-          }
-      }
 
 
       if(requestdata.productId){
@@ -57,6 +59,7 @@ class productService {
           return await this.commonHelpers.prepareResponse(StatusCodes.BAD_REQUEST, 'INVALID_PRODUCT_ID');
         }
 
+        if(requestFiles){
         if (!Array.isArray(requestFiles.image)) {
           await this.saProductModel.deleteObj({productId:decodedProductId}, tableConstants.PRODUCT_IMG_MAPPING);
           const image = await this.FileUpload.uploadFile(
@@ -89,6 +92,7 @@ class productService {
             file_name_array,
             tableConstants.PRODUCT_IMG_MAPPING
           );
+        }
         }
         
         await this.saProductModel.updateObj(product_data, { id: decodedProductId}, tableConstants.PRODUCT);

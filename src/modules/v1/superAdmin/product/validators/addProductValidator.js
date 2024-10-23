@@ -7,7 +7,7 @@ const schema = {
         name: {
             type: "string",
             minLength: 1,
-            maxLength: 60,
+            maxLength: 100,
             errorMessage: {
                 type: 'The product name field must be a string',
                 minLength: 'Must have required property product name.',
@@ -17,6 +17,7 @@ const schema = {
         detailedName: {
             type: "string",
             minLength: 1,
+            maxLength: 150,
             errorMessage: {
                 type: 'The detailed name field must be a string',
                 minLength: 'Must have required property detailed name.',
