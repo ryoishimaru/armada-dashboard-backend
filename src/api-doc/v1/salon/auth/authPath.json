@@ -28,7 +28,7 @@
                 "email": {
                   "type": "string",
                   "description": "Enter unique email of user (Min-5,Max-100).",
-                  "example": "jhon@gmail.com"
+                  "example": "armada.salon@mailinator.com"
                 },
                 "password": {
                   "type": "string",
@@ -43,7 +43,7 @@
       },
       "responses": {
         "200": {
-          "description": "When salon signup successfully.",
+          "description": "When the salon signup confirmation link is sent successfully, please confirm your signup by clicking the link you received in the email.",
           "content": {
             "application/json": {
               "schema": {
@@ -51,11 +51,7 @@
                 "properties": {
                   "code": {
                     "type": "integer",
-                    "example": 200
-                  },
-                  "data": {
-                    "type": "object",
-                    "example": {}
+                    "example": 118
                   }
                 }
               }
