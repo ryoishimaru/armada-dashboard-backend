@@ -13,7 +13,8 @@ container.register({
   JwtAuthSecurity: asClass(require('~/libraries/JwtAuthSecurity')).singleton(),
   commonHelpers: asValue(require("~/helpers/commonHelpers").default),
   Email: asClass(require('~/libraries/Email')).singleton(),
-  FileUpload: asClass(require('~/libraries/FileUpload')).singleton()
+  FileUpload: asClass(require('~/libraries/FileUpload')).singleton(),
+  commonService: asValue(require("~/services/commonServices"))
 });
 
 // response handler file
@@ -55,6 +56,12 @@ container.register({
   webManagerModel: asClass(require('!/salon/webManager/models/WebManagerModel')).singleton()
 });
 
+// Salon product module related classes
+container.register({
+  productController: asClass(require('!/salon/product/controllers/productController')).singleton(),
+  productService: asClass(require('!/salon/product/services/productService')).singleton(),
+  ProductModel: asClass(require('!/salon/product/models/ProductModel')).singleton()
+});
 /* ================== Salon Dependency Start ================== */
 
 // Make the container available for other parts of your application

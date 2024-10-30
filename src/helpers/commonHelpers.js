@@ -2,6 +2,9 @@ var crypto = require('crypto');
 var generator = require('generate-password');
 const CryptoJS = require('crypto-js');
 const { v4:uuidv4 } = require('uuid');
+const NodeCache = require("node-cache");
+const myCache = new NodeCache();
+const SftpClient = require('ssh2-sftp-client');
 
 import Path from "path";
 import logger from "~/utils/logger";
@@ -13,6 +16,7 @@ import commonConstants from "~/constants/commonConstants";
 import responseCodeConstant from "~/constants/responseCodeConstant";
 import JwtAuthSecurity from "~/libraries/JwtAuthSecurity";
 import baseModel from "~/models/BaseModel";
+
 
 const JwtAuthSecurityObj = new JwtAuthSecurity(),baseModelObj = new baseModel();
 const FileUploads = new FileUpload();
@@ -283,6 +287,70 @@ async function handleFileUpload(file, existingFile, fileValidations) {
     }
     return "";
 };
+/**
+ * Set a value in the cache
+ * @param {string} key - The key to store the value under
+ * @param {any} value - The value to store
+ * @param {number} ttl - Time to live in seconds
+ */
+const setCacheValue = (key, value, ttl = 3600) => {
+    myCache.set(key, value, ttl);
+};
+
+/**
+ * Get a value from the cache
+ * @param {string} key - The key to retrieve the value for
+ * @returns {any} - The cached value or null if not found
+ */
+const getCacheValue = (key) => {
+    return myCache.get(key);
+};
+
+/**
+ * Delete a value from the cache
+ * @param {string} key - The key to delete
+ */
+const deleteCacheValue = (key) => {
+    myCache.del(key);
+};
+
+/**
+ * Check if a key exists in the cache
+ * @param {string} key - The key to check
+ * @returns {boolean} - True if the key exists, otherwise false
+ */
+const cacheExists = (key) => {
+    return myCache.has(key);
+};
+
+// Upload a file to an SFTP server
+const uploadFileToSFTP = async function (localFilePath, remoteFilePath) {
+    const config = {
+        host: '160.16.4.56',
+        port: '17800',
+        username: 'ftp_armada_image', 
+        password: 'WiUV2KkLZgH2'
+    };
+
+    const sftp = new SftpClient();
+
+    try {
+        // Connect to the SFTP server
+        await sftp.connect(config);
+
+        // Upload the file
+        await sftp.put(localFilePath, remoteFilePath);
+
+        console.log(`File uploaded successfully to ${remoteFilePath}`);
+        return true;
+    } catch (error) {
+        console.error('Error uploading file to SFTP:', error);
+        throw error;
+    } finally {
+        // Close the SFTP connection
+        await sftp.end();
+    }
+};
 
 const commonHelpers = {
     getOtp,
@@ -301,7 +369,12 @@ const commonHelpers = {
     updateHeaderInfo,
     handleEmptyValue,
     prepareResponse,
-    handleFileUpload
+    handleFileUpload,
+    setCacheValue,
+    getCacheValue,
+    deleteCacheValue,
+    cacheExists,
+    uploadFileToSFTP
 }
 
 export default commonHelpers
