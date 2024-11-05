@@ -171,7 +171,7 @@ class productService {
   };
 
   /*
-  List product servicey
+  List product service
   */
   async getProducts(reqQuery) {
       try {

@@ -5,12 +5,17 @@ class productController {
         this.responseHandler = responseHandler
     }
     
+    // Get products controller
+    async getProducts(req, res, next) {
+        const returnData = await this.productService.getProducts(req.query, req.user);
+        await this.responseHandler.handleServiceResponse(req, res, returnData);
+    }
+
     // Save product controller
     async saveProduct(req, res, next) {
         const returnData = await this.productService.saveProduct(req.body, req.files);
         await this.responseHandler.handleServiceResponse(req, res, returnData);
     }
-
 }
 
 module.exports = productController;

@@ -19,6 +19,10 @@ exports.up = function (knex) {
       .references("product.id")
       .onDelete("CASCADE")
       .comment("FK->product.id");
+      table.decimal("sellingPrice", 10, 2).defaultTo(0);
+      table.tinyint("hasRegularSales", 1).nullable();
+      table.tinyint("isSubscribed", 1).nullable();
+      table.tinyint("discountRateOnSubscription", 1).nullable().comment("Discount rate on subscription (1 = 10%, 2 = 15%, 3 = 20%)");
       table.dateTime("createdAt").notNullable();
     });
 };

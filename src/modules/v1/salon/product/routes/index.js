@@ -10,6 +10,11 @@ const container = require('~/dependency'),
         jwtVerifyToken = container.resolve("jwtVerifyToken")
 
 /*
+ * create routes for getProduct method in productController
+*/
+product.get('/product', checkApiHeaders, jwtVerifyToken, (req, res, next) => { productController.getProducts(req, res, next); });
+
+/*
  * create routes for saveProduct method in productController
 */
 product.post('/product', (req, res, next) => { productController.saveProduct(req, res, next); });

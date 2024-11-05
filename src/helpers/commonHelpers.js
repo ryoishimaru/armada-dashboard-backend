@@ -326,10 +326,10 @@ const cacheExists = (key) => {
 // Upload a file to an SFTP server
 const uploadFileToSFTP = async function (localFilePath, remoteFilePath) {
     const config = {
-        host: '160.16.4.56',
-        port: '17800',
-        username: 'ftp_armada_image', 
-        password: 'WiUV2KkLZgH2'
+        host: process.env.SFTP_HOST,
+        port: process.env.SFTP_PORT,
+        username: process.env.SFTP_USER, 
+        password: process.env.SFTP_PASSWORD
     };
 
     const sftp = new SftpClient();
