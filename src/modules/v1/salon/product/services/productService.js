@@ -1,5 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import { commonServices } from '~/services/commonServices';
+import tableConstants from '~/constants/tableConstants';
 import axios from "axios";
 import path from "path";
 
@@ -87,41 +88,64 @@ class productService {
     }
   }
   */
-  async saveProduct(requestdata,requestFiles) {
+  async saveProduct(requestdata, requestFiles, reqUser) {
     try {
+
+      const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id),
+            decryptedProductId = this.commonHelpers.decrypt(requestdata.productId),
+            salonCode = reqUser.salon_code,
+            productMappingObj = {...requestdata};
+            productMappingObj.salonId = decryptedUserId;
+            productMappingObj.productId = decryptedProductId;
+            productMappingObj.createdAt = this.DateTimeUtil.getCurrentTimeObjForDB();
+
+      console.log(productMappingObj); return false;
+      // Create new product in the database
+      await this.ProductModel.createObj(productMappingObj, tableConstants.SALON_PRODUCT_MAPPING);
+      
+      const productFullName = `${productMappingObj.name}_${productMappingObj.detailedName}`;
+
+      if(productMappingObj.hasRegularSales){
+        productMappingObj.sellingPrice = productMappingObj.sellingPrice;
+      }
+
+      if(productMappingObj.isSubscribed){
+        const discountMap = {
+          1: 10,
+          2: 15,
+          3: 20
+        };
+      
+        const calcDiscount = discountMap[productMappingObj.discountRateOnSubscription] || 0;
+        productMappingObj.sellingPrice = productMappingObj.sellingPrice * (1 - calcDiscount / 100);
+      }
 
       const data = {
         products: [
             {
                 product: {
-                    common_code: "",
-                    note: "",
-                    status: "",
-                    common_product_code: "",
-                    product_type_id: "",
-                    main_list_comment: "",
-                    name: "",
-                    price02: "",
-                    weight: "",
-                    tax_flag: "",
-                    daibiki_flag: "",
-                    deliv_id: "",
-                    postage_flag: "",
-                    price_type: "",
-                    price_show_type: "",
-                    sales_channel_mode: "",
-                    sale_limit_flg: "",
-                    sale_limit_min: "",
-                    sale_limit: "",
-                    sell_flag: "",
-                    stock_unlimited: ""
+                    common_code: `${salonCode}_${decryptedProductId}`,
+                    status: 0,
+                    common_product_code: `${salonCode}_${decryptedProductId}`,
+                    product_type_id: 1,
+                    name: productFullName,
+                    price02: productMappingObj.sellingPrice,
+                    deliv_id: "aeDirect送料代引き無料",
+                    sales_channel_mode: 1,
+                    sale_limit_flg: 1,
+                    point_rate: 0,
+                    tax_flag: 0,
+                    weight: productMappingObj.sellingPrice,
+                    zaiko_type: 0
                 }
             }
         ]
       };
+      
+      
 
-      const filePath = path.join(process.cwd(), 'uploads', 'product');
-      await this.commonHelpers.uploadFileToSFTP(`${filePath}/10acg9a0sm2lkbko2.jpg`, '/file/ae_direct/10acg9a0sm2lkbko2.jpg');
+      // const filePath = path.join(process.cwd(), 'uploads', 'product');
+      // await this.commonHelpers.uploadFileToSFTP(`${filePath}/10acg9a0sm2lkbko2.jpg`, '/file/ae_direct/10acg9a0sm2lkbko2.jpg');
       
       // Fetch the OAuth token
       const token = await commonServiceObj.getOAuthToken();
@@ -165,6 +189,7 @@ class productService {
 
         const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id);
 
+        /*
         let pageNo = reqQuery.pageNo;
 
         if (pageNo <= 0 || pageNo == undefined) {
@@ -173,12 +198,13 @@ class productService {
         
         let limit = 10,
         offset = (pageNo - 1) * limit;
+        */
 
         // Fetch product list
-        const productList = await this.ProductModel.fetchProduct(decryptedUserId, offset, false);
-        
+        const productList = await this.ProductModel.fetchProduct(decryptedUserId);
+        console.log(productList);
         // Fetch total count of product
-        const productCount = await this.ProductModel.fetchProduct(decryptedUserId, offset, true);
+        // const productCount = await this.ProductModel.fetchProduct(decryptedUserId, true);
     
         // Check product list data exist or not
         if (productList) {
@@ -188,14 +214,16 @@ class productService {
             });
         }
         
+        /*
         const totalData = offset + limit;
           let loadMore = false;
           
-          if (totalData < productCount) {
+        if (totalData < productCount) {
           loadMore = true;
         }
+        */
 
-        return await this.commonHelpers.prepareResponse(StatusCodes.OK,"SUCCESS", {productList, loadMore, count:productCount});
+        return await this.commonHelpers.prepareResponse(StatusCodes.OK,"SUCCESS", {productList, count:productList.length});
     } catch (error) {
         this.logger.error(error);
         return error;

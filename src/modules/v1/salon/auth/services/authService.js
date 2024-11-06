@@ -110,7 +110,7 @@ class authService {
             };
 
             // fetch the combination of email and password
-            let userData = await this.authModel.fetchObjWithSingleRecord(where, "id,email,password", tableConstants.SALON);
+            let userData = await this.authModel.fetchObjWithSingleRecord(where, "id,salonCode,email,password", tableConstants.SALON);
           
             if (!userData) {
                 // user not found response

@@ -16,8 +16,6 @@ class ProductModel extends BaseModel {
     try {
       
       let baseQuery = this.db(`${tableConstants.PRODUCT} as prod`);
-
-      if (!getCount) {
         baseQuery
           .select(
             "prod.id",
@@ -55,22 +53,13 @@ class ProductModel extends BaseModel {
           )
           .groupBy("prod.id")
           .orderBy("prod.id", "DESC");
-      } else {
-        baseQuery.countDistinct(`prod.id as totalCount`);
-      }
-
-      if (!getCount) {
-        baseQuery.offset(offset).limit(limit);
-      }
+    
 
       // Execute the query
       const result = await baseQuery;
 
-      if (!getCount) {
-        return result;
-      } else {
-        return result[0].totalCount;
-      }
+      return result;
+      
     } catch (error) {
       this.logger.error(error);
       return error;

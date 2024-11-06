@@ -17,6 +17,6 @@ product.get('/product', checkApiHeaders, jwtVerifyToken, (req, res, next) => { p
 /*
  * create routes for saveProduct method in productController
 */
-product.post('/product', (req, res, next) => { productController.saveProduct(req, res, next); });
+product.post('/product', checkApiHeaders, jwtVerifyToken, (req, res, next) => { productController.saveProduct(req, res, next); });
 
 export { product };
