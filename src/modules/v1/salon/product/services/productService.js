@@ -117,13 +117,18 @@ class productService {
         );
         let productMappingObj = { ...requestdata };
 
+        // Product file uploading at Raku2BBC server
+        const fileName = productMappingObj.images.split('/').pop();
+        const filePath = path.join(process.cwd(), 'uploads', 'product');
+        await this.commonHelpers.uploadFileToSFTP(`${filePath}/${fileName}`, `/file/ae_direct/${fileName}`);
+
         productMappingObj.salonId = decryptedUserId;
         productMappingObj.productId = decryptedProductId;
         productMappingObj.createdAt =
           this.DateTimeUtil.getCurrentTimeObjForDB();
 
         // Exclude name and detailedName from database insertion object
-        const { name, detailedName, id, ...filteredProductMappingObj } =
+        const { name, detailedName, id, images, ...filteredProductMappingObj } =
           productMappingObj;
         
         // Save product data to database
@@ -221,7 +226,7 @@ class productService {
           responses.push(discountResponse.data); // Store the response
         }
       }
-
+      console.log(responses[0].response);
       // Return success response with all product creation responses
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,
@@ -255,7 +260,7 @@ class productService {
 
       // Fetch product list
       const productList = await this.ProductModel.fetchProduct(decryptedUserId);
-      console.log(productList);
+      
       // Fetch total count of product
       // const productCount = await this.ProductModel.fetchProduct(decryptedUserId, true);
 
