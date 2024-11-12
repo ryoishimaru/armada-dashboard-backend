@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import tableConstants from '~/constants/tableConstants';
 import { commonServices } from '~/services/commonServices';
+import axios from "axios";
 const commonServiceObj = new commonServices();
 
 /**

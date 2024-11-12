@@ -112,6 +112,10 @@ class productService {
           commonConstants.PRODUCT.FILE_UPLOAD_PATH
         );
 
+        // Product file uploading at Raku2BBC server
+        const filePath = Path.join(process.cwd(), 'uploads', 'product');
+        await this.commonHelpers.uploadFileToSFTP(`${filePath}/${image.name}`, `/file/ae_direct/${image.name}`);
+
         await this.saProductModel.createObj(
           {
             image: image.name,
@@ -127,6 +131,11 @@ class productService {
             file,
             commonConstants.PRODUCT.FILE_UPLOAD_PATH
           );
+
+          // Product file uploading at Raku2BBC server
+          const filePath = Path.join(process.cwd(), 'uploads', 'product');
+          await this.commonHelpers.uploadFileToSFTP(`${filePath}/${uploaded_file.name}`, `/file/ae_direct/${uploaded_file.name}`);
+
           file_name_array.push({
             image: uploaded_file.name,
             productId: productId,
@@ -194,6 +203,7 @@ class productService {
           // Check product list data exist or not
           if (productList) {
               productList.forEach(item => {
+              console.log(item);
               item.id = this.commonHelpers.encrypt(item.id),
               item.images = item.images.split(',');
               });
