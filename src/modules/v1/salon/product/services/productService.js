@@ -23,8 +23,13 @@ class productService {
     this.FileUpload = FileUpload;
   }
 
+ /**
+ * Saves and maps products for a salon, deletes existing mappings, and uploads new products to an external API.
+ * Supports regular and subscription-based products with optional discount handling.
+ */
   async saveProduct(requestDataArray, requestFiles, reqUser) {
     try {
+      console.log(requestDataArray);
       const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id);
       const salonCode = reqUser.salon_code;
 
@@ -34,22 +39,18 @@ class productService {
         tableConstants.SALON_PRODUCT_MAPPING
       );
 
-      const responses = []; // Array to store responses for each product
-
       // Define discount mapping outside of loops and conditions
       const discountMap = { 1: 10, 2: 15, 3: 20 };
       
       for (const requestdata of requestDataArray) {
+
+        const responses = [], savedProductIds = [];
+
         // Decrypt product ID and initialize product mapping object
         const decryptedProductId = this.commonHelpers.decrypt(
           requestdata.id
         );
         let productMappingObj = { ...requestdata };
-
-        // Product file uploading at Raku2BBC server
-        // const fileName = productMappingObj.images.split('/').pop();
-        // const filePath = path.join(process.cwd(), 'uploads', 'product');
-        // await this.commonHelpers.uploadFileToSFTP(`${filePath}/${fileName}`, `/file/ae_direct/${fileName}`);
 
         productMappingObj.salonId = decryptedUserId;
         productMappingObj.productId = decryptedProductId;
@@ -59,12 +60,6 @@ class productService {
         // Exclude name and detailedName from database insertion object
         const { name, detailedName, id, images, ...filteredProductMappingObj } =
           productMappingObj;
-        console.log(filteredProductMappingObj);
-        // Save product data to database
-        await this.ProductModel.createObj(
-          filteredProductMappingObj,
-          tableConstants.SALON_PRODUCT_MAPPING
-        );
 
         const productFullName = `${productMappingObj.name}_${productMappingObj.detailedName}`; // Combine name and detailedName for full name
 
@@ -95,7 +90,7 @@ class productService {
           tax_flag: 0,
           zaiko_type: 0,
           status: 0,
-          main_large_image: productMappingObj.images.split('/').pop(),
+          main_large_image: `ae_direct/${productMappingObj.images.split('/').pop()}`,
           ...(productMappingObj.isSubscribed && { product_reg_flag: '定期商品'})
         };
 
@@ -120,6 +115,7 @@ class productService {
           qs.stringify(data),
           config
         );
+        
         responses.push(response.data); // Store the response
 
         // Check if both hasRegularSales and isSubscribed conditions are true
@@ -156,13 +152,26 @@ class productService {
           );
           responses.push(discountResponse.data); // Store the response
         }
-      }
-      console.log(responses[0].response);
+
+        // Save product data to database
+        const [insertedProductId] = await this.ProductModel.createObj(
+          filteredProductMappingObj,
+          tableConstants.SALON_PRODUCT_MAPPING
+        );
+
+        responses.forEach(element => {
+          savedProductIds.push(element.response.products[0].id);
+        });
+
+        const savedProductIdsStr = savedProductIds.join(",");
+        await this.ProductModel.updateObj({externalProductId:savedProductIdsStr},{id:insertedProductId},tableConstants.SALON_PRODUCT_MAPPING);
+
+      }//loop-end
+
       // Return success response with all product creation responses
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,
-        "SUCCESS",
-        responses
+        "SUCCESS"
       );
     } catch (error) {
       // Log any errors and return them
@@ -170,12 +179,13 @@ class productService {
       return error;
     }
   }
-  
-  /*
-  List product service
-  */
+
+ /**
+ * Retrieves a list of products for a salon user, with encrypted IDs and processed image URLs.
+ */
   async getProducts(reqQuery, reqUser) {
     try {
+
       const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id);
 
       /*
@@ -198,10 +208,13 @@ class productService {
       // Check product list data exist or not
       if (productList) {
         productList.forEach((item) => {
-          (item.id = this.commonHelpers.encrypt(item.id)),
-            (item.images = item.images.split(","));
+          item.id = this.commonHelpers.encrypt(item.id);
+          item.images = item.images.split(",");
+          if (item.externalProductId) {
+            item.externalProductId = item.externalProductId.split(",");
+          }
         });
-      }
+      }      
 
       /*
         const totalData = offset + limit;
@@ -221,6 +234,41 @@ class productService {
       this.logger.error(error);
       return error;
     }
+  }
+
+  /*
+  Delete product service
+  */
+  async deleteProduct() {
+    const productIds = `17669`;
+    // Get OAuth token for authentication
+    const token = await commonServiceObj.getOAuthToken();
+
+    // Set headers for the request
+    const config = {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    // Prepare API request data
+    const dataTemplate = {
+      product_id: `${productIds}`,
+    };
+
+    const data = {
+      products: JSON.stringify([{ product: { ...dataTemplate } }]),
+    };
+
+    // Make the API call
+    const response = await axios.post(
+      "https://shop.armada-style.com/api/v2/products/remove",
+      qs.stringify(data),
+      config
+    );
+
+    console.log(response.data);
   }
 }
 

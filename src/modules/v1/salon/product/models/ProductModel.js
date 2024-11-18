@@ -27,7 +27,8 @@ class ProductModel extends BaseModel {
             MAX(spm.sellingPrice) AS sellingPrice, 
             MAX(spm.hasRegularSales) AS hasRegularSales, 
             MAX(spm.isSubscribed) AS isSubscribed, 
-            MAX(spm.discountRateOnSubscription) AS discountRateOnSubscription`
+            MAX(spm.discountRateOnSubscription) AS discountRateOnSubscription,
+            MAX(spm.externalProductId) AS externalProductId`
             ),
             this.db.raw(
               `GROUP_CONCAT(CONCAT('${process.env.ASSETS_URL_BASE}/${commonConstants.PRODUCT.FILE_UPLOAD_PATH}/', product_imgs.image) ORDER BY product_imgs.id SEPARATOR ",") as images`
