@@ -23,33 +23,52 @@ class productService {
     this.FileUpload = FileUpload;
   }
 
- /**
- * Saves and maps products for a salon, deletes existing mappings, and uploads new products to an external API.
- * Supports regular and subscription-based products with optional discount handling.
- */
+  /**
+   * Saves and maps products for a salon, deletes existing mappings, and uploads new products to an external API.
+   * Supports regular and subscription-based products with optional discount handling.
+   */
   async saveProduct(requestDataArray, requestFiles, reqUser) {
     try {
-      console.log(requestDataArray);
       const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id);
       const salonCode = reqUser.salon_code;
 
+      const getPreviousProducts = await this.ProductModel.fetchObj(
+        { salonId: decryptedUserId },
+        tableConstants.SALON_PRODUCT_MAPPING
+      );
+
+      const dataToDelete = getPreviousProducts
+        .filter((dbItem) => {
+          const matchedRequest = requestDataArray.find((reqItem) => {
+            const decryptedId = this.commonHelpers.decrypt(reqItem.id);
+            console.log(`decryptedId: ${decryptedId}`);
+            return decryptedId == String(dbItem.productId);
+          });
+          return !matchedRequest && dbItem.externalProductId !== null;
+        })
+        .map((item) => item.externalProductId); 
+
+
+      const externalProductIds = dataToDelete.flatMap(item => item.split(','));
+      console.log("IDs to delete:", externalProductIds);
+        
       // Delete existing products for this salon in the mapping table
       await this.ProductModel.deleteObj(
         { salonId: decryptedUserId },
         tableConstants.SALON_PRODUCT_MAPPING
       );
 
+      await this.deleteProduct(externalProductIds);
+
       // Define discount mapping outside of loops and conditions
       const discountMap = { 1: 10, 2: 15, 3: 20 };
-      
-      for (const requestdata of requestDataArray) {
 
-        const responses = [], savedProductIds = [];
+      for (const requestdata of requestDataArray) {
+        const responses = [],
+          savedProductIds = [];
 
         // Decrypt product ID and initialize product mapping object
-        const decryptedProductId = this.commonHelpers.decrypt(
-          requestdata.id
-        );
+        const decryptedProductId = this.commonHelpers.decrypt(requestdata.id);
         let productMappingObj = { ...requestdata };
 
         productMappingObj.salonId = decryptedUserId;
@@ -90,8 +109,12 @@ class productService {
           tax_flag: 0,
           zaiko_type: 0,
           status: 0,
-          main_large_image: `ae_direct/${productMappingObj.images.split('/').pop()}`,
-          ...(productMappingObj.isSubscribed && { product_reg_flag: '定期商品'})
+          main_large_image: `ae_direct/${productMappingObj.images
+            .split("/")
+            .pop()}`,
+          ...(productMappingObj.isSubscribed && {
+            product_reg_flag: "定期商品",
+          }),
         };
 
         const data = {
@@ -115,7 +138,7 @@ class productService {
           qs.stringify(data),
           config
         );
-        
+
         responses.push(response.data); // Store the response
 
         // Check if both hasRegularSales and isSubscribed conditions are true
@@ -159,14 +182,17 @@ class productService {
           tableConstants.SALON_PRODUCT_MAPPING
         );
 
-        responses.forEach(element => {
+        for (const element of responses) {
           savedProductIds.push(element.response.products[0].id);
-        });
+        }
 
         const savedProductIdsStr = savedProductIds.join(",");
-        await this.ProductModel.updateObj({externalProductId:savedProductIdsStr},{id:insertedProductId},tableConstants.SALON_PRODUCT_MAPPING);
-
-      }//loop-end
+        await this.ProductModel.updateObj(
+          { externalProductId: savedProductIdsStr },
+          { id: insertedProductId },
+          tableConstants.SALON_PRODUCT_MAPPING
+        );
+      }
 
       // Return success response with all product creation responses
       return await this.commonHelpers.prepareResponse(
@@ -180,12 +206,11 @@ class productService {
     }
   }
 
- /**
- * Retrieves a list of products for a salon user, with encrypted IDs and processed image URLs.
- */
+  /**
+   * Retrieves a list of products for a salon user, with encrypted IDs and processed image URLs.
+   */
   async getProducts(reqQuery, reqUser) {
     try {
-
       const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id);
 
       /*
@@ -201,7 +226,7 @@ class productService {
 
       // Fetch product list
       const productList = await this.ProductModel.fetchProduct(decryptedUserId);
-      
+
       // Fetch total count of product
       // const productCount = await this.ProductModel.fetchProduct(decryptedUserId, true);
 
@@ -214,7 +239,7 @@ class productService {
             item.externalProductId = item.externalProductId.split(",");
           }
         });
-      }      
+      }
 
       /*
         const totalData = offset + limit;
@@ -239,37 +264,119 @@ class productService {
   /*
   Delete product service
   */
-  async deleteProduct() {
-    const productIds = `17669`;
-    // Get OAuth token for authentication
-    const token = await commonServiceObj.getOAuthToken();
+  // async deleteProduct(requestDataArray) {
+  //   try {
+  //     // Get OAuth token for authentication
+  //     const token = await commonServiceObj.getOAuthToken();
 
-    // Set headers for the request
-    const config = {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Bearer ${token}`,
-      },
-    };
+  //     // Set headers for the request
+  //     const config = {
+  //       headers: {
+  //         "Content-Type": "application/x-www-form-urlencoded",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     };
 
-    // Prepare API request data
-    const dataTemplate = {
-      product_id: `${productIds}`,
-    };
+  //     // Process each request sequentially
+  //     console.log("requestDataArray",requestDataArray);
 
-    const data = {
-      products: JSON.stringify([{ product: { ...dataTemplate } }]),
-    };
+  //     for (const requestdata of requestDataArray) {
+  //       let productMappingObj = { ...requestdata };
+  //       console.log('log-itration');
+  //       if (productMappingObj.externalProductId) {
+  //         console.log(
+  //           "productMappingObj.externalProductId: ",
+  //           productMappingObj.externalProductId
+  //         );
 
-    // Make the API call
-    const response = await axios.post(
-      "https://shop.armada-style.com/api/v2/products/remove",
-      qs.stringify(data),
-      config
-    );
+  //         if (Array.isArray(productMappingObj.externalProductId)) {
+  //           for (const productId of productMappingObj.externalProductId) {
+  //             // Prepare API request data
+  //             const dataTemplate = {
+  //               product_id: `${productId}`,
+  //             };
+  //             console.log(productId);
 
-    console.log(response.data);
-  }
+  //             const data = {
+  //               products: JSON.stringify([{ product: { ...dataTemplate } }]),
+  //             };
+
+  //             // Execute the API call and wait for it to complete
+  //             try {
+  //               const response = await axios.post(
+  //                 "https://shop.armada-style.com/api/v2/products/remove",
+  //                 qs.stringify(data),
+  //                 config
+  //               );
+  //               console.log(
+  //                 `Product ${productId} removed successfully:`,
+  //                 response.data
+  //               );
+  //             } catch (error) {
+  //               console.error(
+  //                 `Error removing product ${productId}:`,
+  //                 error.response?.data || error.message
+  //               );
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+
+  //     console.log("All products processed successfully.");
+  //   } catch (error) {
+  //     console.error("Error during deleteProduct:", error);
+  //   }
+  // }
+  async deleteProduct(productIdArray) {
+    try {
+      // Get OAuth token for authentication
+      const token = await commonServiceObj.getOAuthToken();
+  
+      // Set headers for the request
+      const config = {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${token}`,
+        },
+      };
+  
+      // Iterate over productIdArray sequentially
+      for (const productId of productIdArray) {
+        // Prepare API request data
+        const dataTemplate = {
+          product_id: `${productId}`,
+        };
+        console.log(`Processing product ID: ${productId}`);
+  
+        const data = {
+          products: JSON.stringify([{ product: { ...dataTemplate } }]),
+        };
+  
+        // Execute the API call and wait for it to complete
+        try {
+          const response = await axios.post(
+            "https://shop.armada-style.com/api/v2/products/remove",
+            qs.stringify(data),
+            config
+          );
+          console.log(
+            `Product ${productId} removed successfully:`,
+            response.data
+          );
+        } catch (error) {
+          console.error(
+            `Error removing product ${productId}:`,
+            error.response?.data || error.message
+          );
+        }
+      }
+  
+      console.log("All products processed successfully.");
+    } catch (error) {
+      console.error("Error during deleteProduct:", error);
+    }
+  }  
 }
 
 module.exports = productService;
