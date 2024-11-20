@@ -11,6 +11,10 @@
   },
   "servers": [
     {
+      "url": "http://52.62.254.190",
+      "description": "Dev server"
+    },
+    {
       "url": "http://localhost:5500",
       "description": "Local server"
     }
