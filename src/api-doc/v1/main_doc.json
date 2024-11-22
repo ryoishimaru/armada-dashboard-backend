@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://52.62.254.190",
+      "url": "http://52.62.254.190/api",
       "description": "Dev server"
     },
     {
