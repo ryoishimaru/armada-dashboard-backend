@@ -20,7 +20,7 @@ class authController {
     // Confirm signup controller
     async confirmSignup(req, res, next) {
         await this.authService.confirmSignupService(req.user, res);
-        await res.redirect('http://localhost:5173/signin');
+        await res.redirect(process.env.FRONTEND_SIGNIN_URL);
     }
 
     // Request reset password controller
