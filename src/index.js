@@ -20,13 +20,13 @@ app.set("host", APP_HOST);
 // set the view engine to ejs
 app.set('view engine', 'ejs');
 app.use(fileUpload());
-app.use('/api-doc', swaggerUI.serve, swaggerUI.setup(swaggerDefination));
+app.use('/api/doc', swaggerUI.serve, swaggerUI.setup(swaggerDefination));
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
 //parse application/json
 app.use(bodyParser.json());
-app.use('/product', express.static('uploads/product'));
+app.use('/api/product', express.static('uploads/product'));
 // set path for public folder
 app.use(express.static(Path.join(__dirname, 'public')));
 
@@ -42,8 +42,8 @@ app.use(
 /**
  * router managment for v1
  */
-app.use("/superAdmin", superAdminRoutes);
-app.use("/salon", salonRoutes);
+app.use("/api/superAdmin", superAdminRoutes);
+app.use("/api/salon", salonRoutes);
 
 /*set error middleware*/
 app.use(notFound); //return default error message not found
