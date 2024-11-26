@@ -301,7 +301,7 @@ class authService {
             const resetToken = this.JwtAuthSecurity.generateJwtToken({email: userData.email});
 
             // Generate reset URL (including the JWT token)
-            const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+            const resetUrl = `${process.env.FRONTEND_URL_BASE}/reset-password/${resetToken}`;
 
             // Set up email sending
             const mail_options = {
