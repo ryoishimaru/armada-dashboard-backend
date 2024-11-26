@@ -111,10 +111,7 @@ class productService {
           status: 0,
           main_large_image: `ae_direct/${productMappingObj.images
             .split("/")
-            .pop()}`,
-          ...(productMappingObj.isSubscribed && {
-            product_reg_flag: "定期商品",
-          }),
+            .pop()}`
         };
 
         const data = {
@@ -162,6 +159,9 @@ class productService {
                   common_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
                   common_product_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
                   price02: discountPrice, // Apply discounted price
+                  ...(productMappingObj.isSubscribed && {
+                    product_reg_flag: "定期商品",
+                  })
                 },
               },
             ]),
@@ -261,73 +261,6 @@ class productService {
     }
   }
 
-  /*
-  Delete product service
-  */
-  // async deleteProduct(requestDataArray) {
-  //   try {
-  //     // Get OAuth token for authentication
-  //     const token = await commonServiceObj.getOAuthToken();
-
-  //     // Set headers for the request
-  //     const config = {
-  //       headers: {
-  //         "Content-Type": "application/x-www-form-urlencoded",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     };
-
-  //     // Process each request sequentially
-  //     console.log("requestDataArray",requestDataArray);
-
-  //     for (const requestdata of requestDataArray) {
-  //       let productMappingObj = { ...requestdata };
-  //       console.log('log-itration');
-  //       if (productMappingObj.externalProductId) {
-  //         console.log(
-  //           "productMappingObj.externalProductId: ",
-  //           productMappingObj.externalProductId
-  //         );
-
-  //         if (Array.isArray(productMappingObj.externalProductId)) {
-  //           for (const productId of productMappingObj.externalProductId) {
-  //             // Prepare API request data
-  //             const dataTemplate = {
-  //               product_id: `${productId}`,
-  //             };
-  //             console.log(productId);
-
-  //             const data = {
-  //               products: JSON.stringify([{ product: { ...dataTemplate } }]),
-  //             };
-
-  //             // Execute the API call and wait for it to complete
-  //             try {
-  //               const response = await axios.post(
-  //                 "https://shop.armada-style.com/api/v2/products/remove",
-  //                 qs.stringify(data),
-  //                 config
-  //               );
-  //               console.log(
-  //                 `Product ${productId} removed successfully:`,
-  //                 response.data
-  //               );
-  //             } catch (error) {
-  //               console.error(
-  //                 `Error removing product ${productId}:`,
-  //                 error.response?.data || error.message
-  //               );
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //     console.log("All products processed successfully.");
-  //   } catch (error) {
-  //     console.error("Error during deleteProduct:", error);
-  //   }
-  // }
   async deleteProduct(productIdArray) {
     try {
       // Get OAuth token for authentication
@@ -347,7 +280,6 @@ class productService {
         const dataTemplate = {
           product_id: `${productId}`,
         };
-        console.log(`Processing product ID: ${productId}`);
   
         const data = {
           products: JSON.stringify([{ product: { ...dataTemplate } }]),
@@ -360,10 +292,6 @@ class productService {
             qs.stringify(data),
             config
           );
-          console.log(
-            `Product ${productId} removed successfully:`,
-            response.data
-          );
         } catch (error) {
           console.error(
             `Error removing product ${productId}:`,
@@ -371,8 +299,6 @@ class productService {
           );
         }
       }
-  
-      console.log("All products processed successfully.");
     } catch (error) {
       console.error("Error during deleteProduct:", error);
     }
