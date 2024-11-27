@@ -20,7 +20,7 @@ const commonConstants = {
         LOGGED_IN: 1
     },
     PRODUCT: {
-        MAX_ALLOW_FILE_SIZE: 10485760, // 10MB
+        MAX_ALLOW_FILE_SIZE: 3670016, // 3.5MB
         ALLOW_EXTENSIONS: [".jpg", ".jpeg", ".gif", ".png", ".webp"],
         FILE_UPLOAD_PATH: "product"
     },

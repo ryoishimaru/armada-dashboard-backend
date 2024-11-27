@@ -104,8 +104,8 @@ class productService {
 
       // Create new product in the database
       const productId = await this.saProductModel.createObj(product_data, tableConstants.PRODUCT);
-
-      // Upload the files
+      
+      // Upload the files old code
       // if (!Array.isArray(requestFiles.image)) {
       //   const image = await this.FileUpload.uploadFile(
       //     requestFiles.image,
@@ -178,7 +178,7 @@ class productService {
       //   );
       // }
 
-
+      // Upload the files new code
       const uploadImageFile = (file) => {
         return new Promise((resolve, reject) => {
           this.FileUpload.uploadFile(file, commonConstants.PRODUCT.FILE_UPLOAD_PATH)
@@ -257,7 +257,6 @@ class productService {
           });
       }
       
-
       // Return success response
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,
