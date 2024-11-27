@@ -104,159 +104,50 @@ class productService {
 
       // Create new product in the database
       const productId = await this.saProductModel.createObj(product_data, tableConstants.PRODUCT);
-      
-      // Upload the files old code
-      // if (!Array.isArray(requestFiles.image)) {
-      //   const image = await this.FileUpload.uploadFile(
-      //     requestFiles.image,
-      //     commonConstants.PRODUCT.FILE_UPLOAD_PATH
-      //   );
 
-
-      //   const uploadImage = (requestFiles) => {
-      //     return new Promise((resolve, reject) => {
-      //       if (!Array.isArray(requestFiles.image)) {
-      //         this.FileUpload.uploadFile(
-      //           requestFiles.image,
-      //           commonConstants.PRODUCT.FILE_UPLOAD_PATH
-      //         )
-      //           .then((image) => {
-      //             resolve(image); // Resolve the promise with the uploaded image
-      //           })
-      //           .catch((error) => {
-      //             reject(error); // Reject the promise if there's an error
-      //           });
-      //       } else {
-      //         reject(new Error("requestFiles.image must not be an array"));
-      //       }
-      //     });
-      //   };
-        
-      //   // Usage
-      //   uploadImage(requestFiles)
-      //     .then((image) => {
-      //       console.log("Image uploaded successfully:", image);
-      //     })
-      //     .catch((error) => {
-      //       console.error("Error uploading image:", error);
-      //     });
-        
-
-      //   // Product file uploading at Raku2BBC server
-      //   const filePath = Path.join(process.cwd(), 'uploads', 'product');
-      //   await this.commonHelpers.uploadFileToSFTP(`${filePath}/${image.name}`, `/file/ae_direct/${image.name}`);
-
-      //   await this.saProductModel.createObj(
-      //     {
-      //       image: image.name,
-      //       productId: productId,
-      //       createdAt: product_data.createdAt,
-      //     },
-      //     tableConstants.PRODUCT_IMG_MAPPING
-      //   );
-      // } else {
-      //   const file_name_array = [];
-      //   for (const file of requestFiles.image) {
-      //     const uploaded_file = await this.FileUpload.uploadFile(
-      //       file,
-      //       commonConstants.PRODUCT.FILE_UPLOAD_PATH
-      //     );
-
-      //     // Product file uploading at Raku2BBC server
-      //     const filePath = Path.join(process.cwd(), 'uploads', 'product');
-      //     await this.commonHelpers.uploadFileToSFTP(`${filePath}/${uploaded_file.name}`, `/file/ae_direct/${uploaded_file.name}`);
-
-      //     file_name_array.push({
-      //       image: uploaded_file.name,
-      //       productId: productId,
-      //       createdAt: product_data.createdAt,
-      //     });
-      //   }
-      //   await this.saProductModel.createObj(
-      //     file_name_array,
-      //     tableConstants.PRODUCT_IMG_MAPPING
-      //   );
-      // }
-
-      // Upload the files new code
-      const uploadImageFile = (file) => {
-        return new Promise((resolve, reject) => {
-          this.FileUpload.uploadFile(file, commonConstants.PRODUCT.FILE_UPLOAD_PATH)
-            .then(resolve)
-            .catch(reject);
-        });
-      };
-      
-      const uploadFileToSFTP = (localPath, remotePath) => {
-        return new Promise((resolve, reject) => {
-          this.commonHelpers.uploadFileToSFTP(localPath, remotePath)
-            .then(resolve)
-            .catch(reject);
-        });
-      };
-      
+      // Upload the files
       if (!Array.isArray(requestFiles.image)) {
-        // Single image file
-        uploadImageFile(requestFiles.image)
-          .then((image) => {
-            const filePath = Path.join(process.cwd(), 'uploads', 'product');
-            return uploadFileToSFTP(
-              `${filePath}/${image.name}`,
-              `/file/ae_direct/${image.name}`
-            ).then(() => image); // Pass image to next then
-          })
-          .then((image) => {
-            return this.saProductModel.createObj(
-              {
-                image: image.name,
-                productId: productId,
-                createdAt: product_data.createdAt,
-              },
-              tableConstants.PRODUCT_IMG_MAPPING
-            );
-          })
-          .then(() => {
-            console.log("Single image uploaded and processed successfully.");
-          })
-          .catch((error) => {
-            console.error("Error processing single image:", error);
-          });
-      } else {
-        // Multiple image files
-        const fileNameArray = [];
-        const uploadPromises = requestFiles.image.map((file) =>
-          uploadImageFile(file)
-            .then((uploadedFile) => {
-              const filePath = Path.join(process.cwd(), 'uploads', 'product');
-              return uploadFileToSFTP(
-                `${filePath}/${uploadedFile.name}`,
-                `/file/ae_direct/${uploadedFile.name}`
-              ).then(() => uploadedFile); // Pass uploadedFile to next then
-            })
-            .then((uploadedFile) => {
-              fileNameArray.push({
-                image: uploadedFile.name,
-                productId: productId,
-                createdAt: product_data.createdAt,
-              });
-            })
+        const image = await this.FileUpload.uploadFile(
+          requestFiles.image,
+          commonConstants.PRODUCT.FILE_UPLOAD_PATH
         );
-      
-        Promise.all(uploadPromises)
-          .then(() => {
-            return this.saProductModel.createObj(
-              fileNameArray,
-              tableConstants.PRODUCT_IMG_MAPPING
-            );
-          })
-          .then(() => {
-            console.log("Multiple images uploaded and processed successfully.");
-          })
-          .catch((error) => {
-            console.error("Error processing multiple images:", error);
+
+        // Product file uploading at Raku2BBC server
+        const filePath = Path.join(process.cwd(), 'uploads', 'product');
+        await this.commonHelpers.uploadFileToSFTP(`${filePath}/${image.name}`, `/file/ae_direct/${image.name}`);
+
+        await this.saProductModel.createObj(
+          {
+            image: image.name,
+            productId: productId,
+            createdAt: product_data.createdAt,
+          },
+          tableConstants.PRODUCT_IMG_MAPPING
+        );
+      } else {
+        const file_name_array = [];
+        for (const file of requestFiles.image) {
+          const uploaded_file = await this.FileUpload.uploadFile(
+            file,
+            commonConstants.PRODUCT.FILE_UPLOAD_PATH
+          );
+
+          // Product file uploading at Raku2BBC server
+          const filePath = Path.join(process.cwd(), 'uploads', 'product');
+          await this.commonHelpers.uploadFileToSFTP(`${filePath}/${uploaded_file.name}`, `/file/ae_direct/${uploaded_file.name}`);
+
+          file_name_array.push({
+            image: uploaded_file.name,
+            productId: productId,
+            createdAt: product_data.createdAt,
           });
+        }
+        await this.saProductModel.createObj(
+          file_name_array,
+          tableConstants.PRODUCT_IMG_MAPPING
+        );
       }
-      
+
       // Return success response
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,
@@ -312,7 +203,6 @@ class productService {
           // Check product list data exist or not
           if (productList) {
               productList.forEach(item => {
-              console.log(item);
               item.id = this.commonHelpers.encrypt(item.id),
               item.images = item.images.split(',');
               });
