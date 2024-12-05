@@ -124,3 +124,6 @@ _snapshots_
 src/api-doc/v1/_build/
 
 pull_request_template.md
+
+init-db.sh
+my.cnf

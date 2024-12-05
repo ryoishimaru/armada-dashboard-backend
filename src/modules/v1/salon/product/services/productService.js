@@ -1,8 +1,8 @@
-import { StatusCodes } from "http-status-codes";
+import { StatusCodes } from 'http-status-codes';
 import { commonServices } from '~/services/commonServices';
 import tableConstants from '~/constants/tableConstants';
-import axios from "axios";
-import path from "path";
+import axios from 'axios';
+import path from 'path';
 
 const qs = require('qs');
 
@@ -44,14 +44,19 @@ class productService {
             console.log(`decryptedId: ${decryptedId}`);
             return decryptedId == String(dbItem.productId);
           });
-          return !matchedRequest && dbItem.externalProductId !== null;
+          return (
+            (!matchedRequest && dbItem.externalProductId !== null) ||
+            (!matchedRequest?.hasRegularSales && !!dbItem.hasRegularSales) ||
+            (!matchedRequest?.isSubscribed && !!dbItem.isSubscribed)
+          );
         })
-        .map((item) => item.externalProductId); 
+        .map((item) => item.externalProductId);
 
+      const externalProductIds = dataToDelete.flatMap((item) =>
+        item.split(',')
+      );
+      console.log('IDs to delete:', externalProductIds);
 
-      const externalProductIds = dataToDelete.flatMap(item => item.split(','));
-      console.log("IDs to delete:", externalProductIds);
-        
       // Delete existing products for this salon in the mapping table
       await this.ProductModel.deleteObj(
         { salonId: decryptedUserId },
@@ -64,8 +69,8 @@ class productService {
       const discountMap = { 1: 10, 2: 15, 3: 20 };
 
       for (const requestdata of requestDataArray) {
-        const responses = [],
-          savedProductIds = [];
+        const responses = [];
+        let savedProductIds = [];
 
         // Decrypt product ID and initialize product mapping object
         const decryptedProductId = this.commonHelpers.decrypt(requestdata.id);
@@ -82,19 +87,6 @@ class productService {
 
         const productFullName = `${productMappingObj.name}_${productMappingObj.detailedName}`; // Combine name and detailedName for full name
 
-        // Set selling price
-        if (productMappingObj.hasRegularSales) {
-          productMappingObj.sellingPrice = productMappingObj.sellingPrice;
-        }
-
-        // Calculate subscription discount if applicable
-        if (productMappingObj.isSubscribed) {
-          const calcDiscount =
-            discountMap[productMappingObj.discountRateOnSubscription] || 0;
-          productMappingObj.sellingPrice =
-            productMappingObj.sellingPrice * (1 - calcDiscount / 100);
-        }
-
         // Prepare API request data with "_system" postfix
         const dataTemplate = {
           common_code: `${salonCode}_${decryptedProductId}_system`,
@@ -102,7 +94,7 @@ class productService {
           product_type_id: 1,
           name: productFullName,
           price02: productMappingObj.sellingPrice,
-          deliv_id: "aeDirect（送料代引き無料）",
+          deliv_id: 'aeDirect（送料代引き無料）',
           sales_channel_mode: 1,
           sale_limit_flg: 1,
           point_rate: 0,
@@ -110,94 +102,135 @@ class productService {
           zaiko_type: 0,
           status: 0,
           main_large_image: `ae_direct/${productMappingObj.images
-            .split("/")
-            .pop()}`
+            .split('/')
+            .pop()}`,
         };
 
-        const data = {
-          products: JSON.stringify([{ product: { ...dataTemplate } }]),
-        };
+        // * 出品時は通常販売か購読かで判別して出品する
 
-        // Get OAuth token for authentication
-        const token = await commonServiceObj.getOAuthToken();
-
-        // Set headers for the request
-        const config = {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization: `Bearer ${token}`,
-          },
-        };
-
-        // Make the initial API call with regular price
-        const response = await axios.post(
-          "https://shop.armada-style.com/api/v2/products/create",
-          qs.stringify(data),
-          config
-        );
-
-        responses.push(response.data); // Store the response
-
-        // Check if both hasRegularSales and isSubscribed conditions are true
-        if (
-          productMappingObj.hasRegularSales &&
-          productMappingObj.isSubscribed
-        ) {
-          // Apply discount for second creation
-          const discountPrice =
-            productMappingObj.sellingPrice *
-            (1 -
-              (discountMap[productMappingObj.discountRateOnSubscription] || 0) /
-                100);
-
-          // Prepare data for the discounted product with "_system_t" postfix
-          const discountedData = {
-            products: JSON.stringify([
-              {
-                product: {
-                  ...dataTemplate,
-                  common_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
-                  common_product_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
-                  price02: discountPrice, // Apply discounted price
-                  ...(productMappingObj.isSubscribed && {
-                    product_reg_flag: "定期商品",
-                  })
-                },
-              },
-            ]),
-          };
-
-          // Make the second API call for the discounted price product
-          const discountResponse = await axios.post(
-            "https://shop.armada-style.com/api/v2/products/create",
-            qs.stringify(discountedData),
-            config
-          );
-          responses.push(discountResponse.data); // Store the response
+        // Set selling price
+        if (productMappingObj.hasRegularSales) {
+          dataTemplate.price02 = productMappingObj.sellingPrice;
+          const result = await this.createProduct(dataTemplate);
+          responses.push(result.data);
         }
 
+        // Calculate subscription discount if applicable
+        if (productMappingObj.isSubscribed) {
+          const calcDiscount =
+            discountMap[productMappingObj.discountRateOnSubscription] || 0;
+          dataTemplate.price02 =
+            productMappingObj.sellingPrice * (1 - calcDiscount / 100);
+          dataTemplate.common_code = `${salonCode}_${decryptedProductId}_system_t`;
+          dataTemplate.common_product_code = `${salonCode}_${decryptedProductId}_system_t`;
+
+          dataTemplate.product_reg_flag = '定期商品';
+          const result = await this.createProduct(dataTemplate);
+          responses.push(result.data);
+        }
+
+        //! 以下廃止
+        // const data = {
+        //   products: JSON.stringify([{ product: { ...dataTemplate } }]),
+        // };
+
+        // // Get OAuth token for authentication
+        // const token = await commonServiceObj.getOAuthToken();
+
+        // // Set headers for the request
+        // const config = {
+        //   headers: {
+        //     'Content-Type': 'application/x-www-form-urlencoded',
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        // };
+
+        // // Make the initial API call with regular price
+        // const response = await axios.post(
+        //   'https://shop.armada-style.com/api/v2/products/create',
+        //   qs.stringify(data),
+        //   config
+        // );
+
+        // responses.push(response.data); // Store the response
+
+        // // Check if both hasRegularSales and isSubscribed conditions are true
+        // if (
+        //   productMappingObj.hasRegularSales &&
+        //   productMappingObj.isSubscribed
+        // ) {
+        //   // Apply discount for second creation
+        //   const discountPrice =
+        //     productMappingObj.sellingPrice *
+        //     (1 -
+        //       (discountMap[productMappingObj.discountRateOnSubscription] || 0) /
+        //         100);
+
+        //   // Prepare data for the discounted product with "_system_t" postfix
+        //   const discountedData = {
+        //     products: JSON.stringify([
+        //       {
+        //         product: {
+        //           ...dataTemplate,
+        //           common_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
+        //           common_product_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
+        //           price02: discountPrice, // Apply discounted price
+        //           ...(productMappingObj.isSubscribed && {
+        //             product_reg_flag: '定期商品',
+        //           }),
+        //         },
+        //       },
+        //     ]),
+        //   };
+
+        //   // Make the second API call for the discounted price product
+        //   const discountResponse = await axios.post(
+        //     'https://shop.armada-style.com/api/v2/products/create',
+        //     qs.stringify(discountedData),
+        //     config
+        //   );
+        //   responses.push(discountResponse.data); // Store the response
+        // }
+        //! ここまで
+
         // Save product data to database
+        console.log({ filteredProductMappingObj });
         const [insertedProductId] = await this.ProductModel.createObj(
           filteredProductMappingObj,
           tableConstants.SALON_PRODUCT_MAPPING
         );
 
+        const insertedExternalProductIds =
+          filteredProductMappingObj.externalProductId.split(',');
+        const isExistDeletedProductIds = externalProductIds.find((val) =>
+          insertedExternalProductIds.includes(val)
+        );
+
+        if (!isExistDeletedProductIds) {
+          savedProductIds =
+            filteredProductMappingObj.externalProductId.split(',');
+        }
+
         for (const element of responses) {
+          if (!element.response.products[0]?.id) continue;
+          console.log(element.response.products);
           savedProductIds.push(element.response.products[0].id);
         }
 
-        const savedProductIdsStr = savedProductIds.join(",");
-        await this.ProductModel.updateObj(
-          { externalProductId: savedProductIdsStr },
-          { id: insertedProductId },
-          tableConstants.SALON_PRODUCT_MAPPING
-        );
+        if (savedProductIds.length != 0) {
+          const savedProductIdsStr = savedProductIds.join(',');
+          await this.ProductModel.updateObj(
+            { externalProductId: savedProductIdsStr },
+            { id: insertedProductId },
+            tableConstants.SALON_PRODUCT_MAPPING
+          );
+        }
       }
 
       // Return success response with all product creation responses
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,
-        "SUCCESS"
+        'SUCCESS'
       );
     } catch (error) {
       // Log any errors and return them
@@ -234,9 +267,9 @@ class productService {
       if (productList) {
         productList.forEach((item) => {
           item.id = this.commonHelpers.encrypt(item.id);
-          item.images = item.images.split(",");
+          item.images = item.images.split(',');
           if (item.externalProductId) {
-            item.externalProductId = item.externalProductId.split(",");
+            item.externalProductId = item.externalProductId.split(',');
           }
         });
       }
@@ -252,7 +285,7 @@ class productService {
 
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,
-        "SUCCESS",
+        'SUCCESS',
         { productList, count: productList.length }
       );
     } catch (error) {
@@ -261,34 +294,64 @@ class productService {
     }
   }
 
+  async createProduct(dataTemplate) {
+    try {
+      const data = {
+        products: JSON.stringify([{ product: { ...dataTemplate } }]),
+      };
+
+      // Get OAuth token for authentication
+      const token = await commonServiceObj.getOAuthToken();
+
+      // Set headers for the request
+      const config = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      // Make the initial API call with regular price
+      const response = await axios.post(
+        'https://shop.armada-style.com/api/v2/products/create',
+        qs.stringify(data),
+        config
+      );
+
+      return response;
+    } catch (e) {
+      console.error('Error during createProduct:', error);
+    }
+  }
+
   async deleteProduct(productIdArray) {
     try {
       // Get OAuth token for authentication
       const token = await commonServiceObj.getOAuthToken();
-  
+
       // Set headers for the request
       const config = {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded',
           Authorization: `Bearer ${token}`,
         },
       };
-  
+
       // Iterate over productIdArray sequentially
       for (const productId of productIdArray) {
         // Prepare API request data
         const dataTemplate = {
           product_id: `${productId}`,
         };
-  
+
         const data = {
           products: JSON.stringify([{ product: { ...dataTemplate } }]),
         };
-  
+
         // Execute the API call and wait for it to complete
         try {
-          const response = await axios.post(
-            "https://shop.armada-style.com/api/v2/products/remove",
+          await axios.post(
+            'https://shop.armada-style.com/api/v2/products/remove',
             qs.stringify(data),
             config
           );
@@ -300,9 +363,9 @@ class productService {
         }
       }
     } catch (error) {
-      console.error("Error during deleteProduct:", error);
+      console.error('Error during deleteProduct:', error);
     }
-  }  
+  }
 }
 
 module.exports = productService;
