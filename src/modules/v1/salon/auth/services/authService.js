@@ -254,8 +254,8 @@ class authService {
         template: 'sendConfirmationLink',
         context: {
           confirmationLink,
-          websiteUrl: process.env.CORS_ALLOW_DOMAIN,
-          baseUrl: process.env.CORS_ALLOW_DOMAIN,
+          websiteUrl: process.env.FRONTEND_URL_BASE,
+          baseUrl: process.env.FRONTEND_URL_BASE,
         },
       };
 
