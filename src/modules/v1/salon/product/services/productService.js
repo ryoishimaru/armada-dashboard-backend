@@ -129,70 +129,6 @@ class productService {
           responses.push(result.data);
         }
 
-        //! 以下廃止
-        // const data = {
-        //   products: JSON.stringify([{ product: { ...dataTemplate } }]),
-        // };
-
-        // // Get OAuth token for authentication
-        // const token = await commonServiceObj.getOAuthToken();
-
-        // // Set headers for the request
-        // const config = {
-        //   headers: {
-        //     'Content-Type': 'application/x-www-form-urlencoded',
-        //     Authorization: `Bearer ${token}`,
-        //   },
-        // };
-
-        // // Make the initial API call with regular price
-        // const response = await axios.post(
-        //   'https://shop.armada-style.com/api/v2/products/create',
-        //   qs.stringify(data),
-        //   config
-        // );
-
-        // responses.push(response.data); // Store the response
-
-        // // Check if both hasRegularSales and isSubscribed conditions are true
-        // if (
-        //   productMappingObj.hasRegularSales &&
-        //   productMappingObj.isSubscribed
-        // ) {
-        //   // Apply discount for second creation
-        //   const discountPrice =
-        //     productMappingObj.sellingPrice *
-        //     (1 -
-        //       (discountMap[productMappingObj.discountRateOnSubscription] || 0) /
-        //         100);
-
-        //   // Prepare data for the discounted product with "_system_t" postfix
-        //   const discountedData = {
-        //     products: JSON.stringify([
-        //       {
-        //         product: {
-        //           ...dataTemplate,
-        //           common_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
-        //           common_product_code: `${salonCode}_${decryptedProductId}_system_t`, // Postfix "_system_t" for discounted product
-        //           price02: discountPrice, // Apply discounted price
-        //           ...(productMappingObj.isSubscribed && {
-        //             product_reg_flag: '定期商品',
-        //           }),
-        //         },
-        //       },
-        //     ]),
-        //   };
-
-        //   // Make the second API call for the discounted price product
-        //   const discountResponse = await axios.post(
-        //     'https://shop.armada-style.com/api/v2/products/create',
-        //     qs.stringify(discountedData),
-        //     config
-        //   );
-        //   responses.push(discountResponse.data); // Store the response
-        // }
-        //! ここまで
-
         // Save product data to database
         console.log({ filteredProductMappingObj });
         const [insertedProductId] = await this.ProductModel.createObj(
@@ -228,10 +164,10 @@ class productService {
       }
 
       // Return success response with all product creation responses
-      return await this.commonHelpers.prepareResponse(
-        StatusCodes.OK,
-        'SUCCESS'
-      );
+      return {
+        status_code: StatusCodes.MOVED_TEMPORARILY,
+        message: 'SUCCESS',
+      };
     } catch (error) {
       // Log any errors and return them
       this.logger.error(error);
