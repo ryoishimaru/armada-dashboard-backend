@@ -2,14 +2,51 @@
 現在#の前にphp関数や親ディレクトリスラッシュ（./）が入っているとスムーススクロールが動かない。
 なければ動くがトップページでしか動作しない。
 -->
-<nav>
-<ul>
-<!-- NAV_PLACEHOLDER -->
-<!-- <li><a id="nav_haircare" href="<?php echo $Path; ?>#haircare"><span>ヘアケア</span></a></li>
+
+<style>
+    .main-nav ul {
+        display: flex;
+        list-style: none;
+    }
+
+    .main-nav li {
+        flex: 1;
+        text-align: center;
+    }
+
+    .main-nav a {
+        display: block;
+        padding: 1rem;
+        background: #666;
+        /* 画像の灰色背景に合わせて調整 */
+        color: #fff;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+
+    .main-nav a:hover {
+        background: #777;
+    }
+
+    /* 区切り線のスタイル */
+    .main-nav li+li {
+        border-left: 1px solid #fff;
+    }
+
+    .main-nav li:only-child a {
+        /* 複数ある場合の最初の要素 */
+        border-radius: 20px 20px 20px 20px;
+        /* 上部の両端を丸く */
+    }
+</style>
+<nav class="main-nav">
+    <ul>
+        <!-- NAV_PLACEHOLDER -->
+        <!-- <li><a id="nav_haircare" href="<?php echo $Path; ?>#haircare"><span>ヘアケア</span></a></li>
 <li><a id="nav_skincare" href="<?php echo $Path; ?>#skincare"><span>スキンケア・洗顔</span></a></li>
 <li><a id="nav_supplement" href="<?php echo $Path; ?>#supplement"><span>健康食品</span></a></li>
 <li><a id="nav_mozu" href="<?php echo $Path; ?>#mozu"><span>もずの魔法</span></a></li>
 <li><a id="nav_gstea" href="<?php echo $Path; ?>#gstea"><span>セイロン紅茶</span></a></li>
 <li><a id="nav_others" href="<?php echo $Path; ?>#others"><span>日用品・その他</span></a></li> -->
-</ul>
+    </ul>
 </nav>

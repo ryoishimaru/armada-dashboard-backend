@@ -1,5 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 import moment from 'moment';
+import { commonServices } from '~/services/commonServices';
+import axios from 'axios';
+import { createCanvas, registerFont } from 'canvas';
+
+const commonServiceObj = new commonServices();
 const ftp = require('basic-ftp');
 const path = require('path');
 const fs = require('fs');
@@ -9,8 +14,8 @@ class webManagerService {
     haircare: `<li><a id="nav_haircare" href="<?php echo $Path; ?>#haircare"><span>ヘアケア</span></a></li>`,
     skincare: `<li><a id="nav_skincare" href="<?php echo $Path; ?>#skincare"><span>スキンケア・洗顔</span></a></li>`,
     supplement: `<li><a id="nav_supplement" href="<?php echo $Path; ?>#supplement"><span>健康食品</span></a></li>`,
-    mozu: `<li><a id="nav_mozu" href="<?php echo $Path; ?>#mozu"><span>もずの魔法シリーズ</span></a></li>`,
-    gs_tea: `<li><a id="nav_gstea" href="<?php echo $Path; ?>#gstea"><span>セイロン（スリランカ）紅茶</span></a></li>`,
+    mozu: `<li><a id="nav_mozu" href="<?php echo $Path; ?>#mozu"><span>もずの魔法</span></a></li>`,
+    gs_tea: `<li><a id="nav_gstea" href="<?php echo $Path; ?>#gstea"><span>セイロン紅茶</span></a></li>`,
     others: `<li><a id="nav_others" href="<?php echo $Path; ?>#others"><span>日用品・その他</span></a></li>`,
   };
 
@@ -18,8 +23,8 @@ class webManagerService {
     haircare: `<div class="col-md-4"><a href="#haircare"><p>ヘアケア</p><div class="img_wrap"><img src="../common/img_webp/category_haircare.webp" alt="ヘアケア"></div></a></div>`,
     skincare: `<div class="col-md-4"><a href="#skincare"><p>スキンケア・洗顔</p><div class="img_wrap"><img src="../common/img_webp/category_skincare.webp" alt="スキンケア・洗顔"></div></a></div>`,
     supplement: `<div class="col-md-4"><a href="#supplement"><p>健康食品</p><div class="img_wrap"><img src="../common/img_webp/category_supplement.webp" alt="健康食品"></div></a></div>`,
-    mozu: `<div class="col-md-4"><a href="#mozu"><p>もずの魔法シリーズ</p><div class="img_wrap"><img src="../common/img_webp/category_mozu.webp" alt="もずの魔法シリーズ"></div></a></div>`,
-    gs_tea: `<div class="col-md-4"><a href="#gstea"><p>セイロン（スリランカ）紅茶</p><div class="img_wrap"><img src="../common/img_webp/category_gstea.webp" alt="セイロン（スリランカ）紅茶"></div></a></div>`,
+    mozu: `<div class="col-md-4"><a href="#mozu"><p>もずの魔法</p><div class="img_wrap"><img src="../common/img_webp/category_mozu.webp" alt="もずの魔法シリーズ"></div></a></div>`,
+    gs_tea: `<div class="col-md-4"><a href="#gstea"><p>セイロン紅茶</p><div class="img_wrap"><img src="../common/img_webp/category_gstea.webp" alt="セイロン（スリランカ）紅茶"></div></a></div>`,
     others: `<div class="col-md-4"><a href="#others"><p>日用品・その他</p><div class="img_wrap"><img src="../common/img_webp/category_others.webp" alt="日用品・その他"></div></a></div>`,
   };
 
@@ -106,6 +111,16 @@ class webManagerService {
       'enso.html': `  <div class="col-md-3"><a href="others/enso.html"><p>次亜塩素酸水</p><div class="img_wrap"><img loading="lazy" src="../common/img_webp/item_others_enso_300.webp" alt="次亜塩素酸水"></div></a></div>`,
     },
   };
+
+  // 商品一覧をカテゴリごとに追加
+  categoryOrder = [
+    'haircare',
+    'skincare',
+    'supplement',
+    'mozu',
+    'gs_tea',
+    'others',
+  ];
   constructor({ webManagerModel, logger, commonHelpers }) {
     this.webManagerModel = webManagerModel;
     this.logger = logger;
@@ -114,12 +129,20 @@ class webManagerService {
 
   async generateNavHtml(categorizedProducts, tempDir) {
     try {
-      const navHtmlContent = Object.entries(categorizedProducts)
-        .sort(([a], [b]) => b.localeCompare(a))
-        .map(([category, _]) => {
-          return this.navCategories[category];
+      const navHtmlContent = this.categoryOrder
+        .map((category) => {
+          if (categorizedProducts[category]) {
+            return this.navCategories[category];
+          }
         })
         .join('');
+
+      // const navHtmlContent = Object.entries(categorizedProducts)
+      //   .sort(([a], [b]) => b.localeCompare(a))
+      //   .map(([category, _]) => {
+      //     return this.navCategories[category];
+      //   })
+      //   .join('');
 
       const navHtmlTemplatePath = path.join(
         __dirname,
@@ -233,32 +256,27 @@ class webManagerService {
     @requestData request body data
     @requestHeader request header data
     */
-  async generateIndexHtml(
-    productCategories,
-    categorizedProducts,
-    templateConfig
-  ) {
+  async generateIndexHtml(productCategories, categorizedProducts, shopName) {
     try {
-      const { shop_name } = templateConfig;
       let indexHtmlMainContent = '';
 
       // カテゴリーリストの生成
       let categoriesListHtml = '';
-      for (const category of productCategories) {
-        categoriesListHtml += this.mainCategories[category] || '';
-      }
+      this.categoryOrder.forEach((category) => {
+        if (productCategories.includes(category)) {
+          categoriesListHtml += this.mainCategories[category] || '';
+        }
+      });
 
       // メインセクションの追加
       indexHtmlMainContent += `<section class="menu_category"><h2>取扱商品</h2><div class="row">${categoriesListHtml}</div></section>`;
 
-      // 商品一覧をカテゴリごとに追加
-      Object.entries(categorizedProducts)
-        .sort(([a], [b]) => b.localeCompare(a))
-        .forEach(([category, products]) => {
+      this.categoryOrder.forEach((category) => {
+        if (categorizedProducts[category]) {
           const subCategory = this.subCategories[category];
           let subCategoryContent = '';
           if (subCategory) {
-            for (const product of products) {
+            for (const product of categorizedProducts[category]) {
               if (product.htmlFileName && subCategory[product.htmlFileName]) {
                 subCategoryContent += subCategory[product.htmlFileName];
               }
@@ -269,7 +287,8 @@ class webManagerService {
             `<div class="row">${subCategoryContent}</div>`
           );
           indexHtmlMainContent += categorySection;
-        });
+        }
+      });
 
       // テンプレートの読み込みと更新
       const htmlTemplateFolder = path.join(
@@ -282,7 +301,10 @@ class webManagerService {
       // メインコンテンツ、タイトル、住所の置換
       indexHtmlContent = indexHtmlContent
         .replace(/<!-- CATEGORY_PLACEHOLDER -->/s, indexHtmlMainContent)
-        .replace(/ <!-- TITLE_PLACEHOLDER -->/, `<title>${shop_name}</title>`);
+        .replace(
+          / <!-- TITLE_PLACEHOLDER -->/,
+          `<title>トップページ | ${shopName}</title>`
+        );
 
       return indexHtmlContent;
     } catch (error) {
@@ -291,17 +313,164 @@ class webManagerService {
     }
   }
 
+  async generateStoreLogo(shopName, tempDir) {
+    try {
+      // フォントの登録
+      registerFont(
+        path.join(__dirname, '../../../../../assets/fonts/NotoSansJP-Bold.otf'),
+        { family: 'Noto Sans JP' }
+      );
+
+      // キャンバスの作成 - サイズを大きく
+      const canvas = createCanvas(1200, 600);
+      const ctx = canvas.getContext('2d');
+
+      // 背景色の設定 - サイズを大きく
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 1200, 600);
+
+      // テキスト設定
+      ctx.fillStyle = '#333333';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // フォントサイズの自動調整 - 初期サイズを大きく
+      let fontSize = 100;
+      ctx.font = `${fontSize}px 'Noto Sans JP'`;
+
+      while (ctx.measureText(shopName).width > 1000 && fontSize > 40) {
+        fontSize -= 2;
+        ctx.font = `${fontSize}px 'Noto Sans JP'`;
+      }
+
+      // テキストの描画 - 中心位置を調整
+      ctx.fillText(shopName, 600, 300);
+
+      // 画像保存用ディレクトリの作成
+      const imgDir = path.join(tempDir, 'img');
+      if (!fs.existsSync(imgDir)) {
+        fs.mkdirSync(imgDir, { recursive: true });
+      }
+
+      // 画像の保存
+      const logoPath = path.join(imgDir, 'store_logo.png');
+      const buffer = canvas.toBuffer('image/png');
+      fs.writeFileSync(logoPath, buffer);
+
+      return logoPath;
+    } catch (error) {
+      this.logger.error('Error generating store logo:', error);
+      throw error;
+    }
+  }
+
+  async generateFooterHtml(memberData, tempDir) {
+    try {
+      const htmlTemplateFolder = path.join(
+        __dirname,
+        '../../../../../htmlTemplates/html-css_source_file'
+      );
+
+      const footerTemplatePath = path.join(
+        htmlTemplateFolder,
+        'inc',
+        'footer.html'
+      );
+      let footerContent = fs.readFileSync(footerTemplatePath, 'utf8');
+
+      // 会員情報の取得
+
+      // 住所の組み立て
+      const fullAddress = `〒${memberData.zip} ${memberData.pref}${memberData.addr01}${memberData.addr02}`;
+
+      // 店舗名の組み立て
+      const shopName = memberData.member_group_name || memberData.company_name;
+
+      // 営業時間と定休日
+      // const businessHour = member.business_hour || '';
+      // const businessClosed = member.business_closed || '';
+
+      // 電話番号
+      // const tel = member.tel || '';
+
+      // フッターコンテンツの置換
+      footerContent = footerContent
+        // 店舗名の置換
+        .replace(/__REPLACED_SHOP_NAME__/, `${shopName}`)
+        .replace(/__REPLACED_SHOP_NAME2__/, `${shopName}`)
+        // 住所の置換
+        .replace(/__REPLACED_SHOP_ADDRESS__/, `${fullAddress}<`);
+      // // 営業時間の置換
+      // .replace(/営業時間：.*?<br>/, `営業時間：${businessHour}<br>`)
+      // // 定休日の置換
+      // .replace(/定休日：.*?</, `定休日：${businessClosed}<`)
+      // 電話番号の置換（存在する場合）
+      // .replace(
+      //   /<div id="tel".*?>/,
+      //   `<div id="tel" class="col-md-6"><p class="tel">${tel}</p>`
+      // )
+
+      // 店舗URLの置換（存在する場合）
+      if (memberData.site_url) {
+        footerContent = footerContent.replace(
+          /href="https:\/\/tokunaga-hair\.com\/".*?>/,
+          `href="${memberData.site_url}" target="_blank">当店のホームページ`
+        );
+      }
+
+      fs.writeFileSync(
+        path.join(tempDir, 'inc', 'footer.html'),
+        footerContent,
+        'utf8'
+      );
+    } catch (error) {
+      this.logger.error('Error generating footer HTML:', error);
+      throw error;
+    }
+  }
+
+  async getSalonInfo(salonCode) {
+    // Fetch OAuth 2.0 token
+    const token = await commonServiceObj.getOAuthToken();
+
+    // Prepare the request body
+    const requestBody = {
+      search_options: {
+        member_code: salonCode.trim(),
+      },
+      response_options: {
+        response_type: 'json',
+        charset: 'UTF-8',
+      },
+    };
+    // Make the API call to validate salon code
+    const response = await axios.post(
+      'https://shop.armada-style.com/api/v2/members/search',
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    // Check if the members array is not empty
+    const members = response.data?.response?.members;
+
+    if (!members || !members[0]?.member) return;
+
+    return members[0].member;
+  }
+
   async deployToFtp(requestDataArray, requestHeader, reqUser) {
     try {
       const decryptedUserId = this.commonHelpers.decrypt(reqUser.user_id);
       const salonCode = reqUser.salon_code;
 
-      // サロン情報の設定
-      const templateConfig = {
-        shop_id: 'test_salon_code',
-        shop_name: 'New Salon',
-        shop_address: 'Tokyo, Japan',
-      };
+      const memberData = await this.getSalonInfo(salonCode);
+
+      const shopName = memberData.member_group_name || memberData.company_name;
 
       // 商品データの取得
       const currentProducts = await this.webManagerModel.fetchUploadProducts(
@@ -338,7 +507,7 @@ class webManagerService {
       );
 
       // 一時ディレクトリの作成
-      const tempDir = `/tmp/${templateConfig.shop_id}/${moment().valueOf()}/`;
+      const tempDir = `/tmp/${salonCode}/${moment().valueOf()}/`;
       fs.mkdirSync(tempDir, { recursive: true });
 
       // テンプレートファイルのコピー
@@ -369,7 +538,7 @@ class webManagerService {
       const indexHtmlContent = await this.generateIndexHtml(
         productCategories,
         categorizedProducts,
-        templateConfig
+        shopName
       );
       fs.writeFileSync(
         path.join(tempDir, 'index.html'),
@@ -379,6 +548,8 @@ class webManagerService {
 
       await this.generateProductHtml(categorizedProducts, tempDir, salonCode);
       await this.generateNavHtml(categorizedProducts, tempDir);
+      await this.generateFooterHtml(memberData, tempDir);
+      await this.generateStoreLogo(shopName, tempDir);
 
       // FTP設定とアップロード
       const ftpConfig = {
@@ -393,7 +564,7 @@ class webManagerService {
 
       await client.access(ftpConfig);
 
-      const remoteShopFolder = `/shop/${templateConfig.shop_id}`;
+      const remoteShopFolder = `/shop/${salonCode}`;
 
       // 既存のファイルを削除
       // await client.clearWorkingDir(remoteShopFolder);

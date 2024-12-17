@@ -33,6 +33,8 @@ services:
       - ./my.cnf:/etc/mysql/conf.d/my.cnf
     networks:
       - app-network
+    command:
+      - --mysql-native-password=ON
 
 networks:
   app-network:
