@@ -1,4 +1,6 @@
 import BaseModel from '~/models/BaseModel';
+import tableConstants from '~/constants/tableConstants';
+import commonConstants from '~/constants/commonConstants';
 class WebManagerModel extends BaseModel {
   constructor({ db, logger }) {
     super();
@@ -27,7 +29,7 @@ class WebManagerModel extends BaseModel {
               MAX(spm.externalProductId) AS externalProductId`),
           this.db.raw(
             `GROUP_CONCAT(CONCAT('${process.env.ASSETS_URL_BASE}/${commonConstants.PRODUCT.FILE_UPLOAD_PATH}/', product_imgs.image) ORDER BY product_imgs.id SEPARATOR ",") as images`
-          ),
+          )
           // this.db.raw(
           //   `CASE WHEN spm.productId IS NOT NULL THEN 1 ELSE 0 END as isMappedToSalon`
           // )

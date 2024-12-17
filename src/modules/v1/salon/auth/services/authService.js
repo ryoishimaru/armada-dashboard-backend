@@ -249,7 +249,7 @@ class authService {
       const confirmationLink = `${process.env.ASSETS_URL_BASE}/salon/v1/confirm-signup?token=${salonObj.token}`;
       /* send verification link start */
       const mail_options = {
-        subject: '[armada]確認メール',
+        subject: 'aestyle-確認メール',
         to: [{ address: salonObj.email }],
         template: 'sendConfirmationLink',
         context: {
@@ -348,7 +348,7 @@ class authService {
 
       // Set up email sending
       const mail_options = {
-        subject: '[armada]パスワードリセット',
+        subject: 'aestyle-パスワードリセット',
         to: [{ address: userData.email }],
         template: 'sendResetPasswordLink',
         context: {

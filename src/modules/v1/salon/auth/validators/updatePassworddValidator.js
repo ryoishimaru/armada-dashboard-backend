@@ -10,10 +10,10 @@ const schema = {
             maxLength: 12,
             pattern: "(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[#$%^&*@])",
             errorMessage: {
-                type: 'The password field must be a string.',
-                minLength: 'Password should have minimum 6 characters.',
-                maxLength: 'Password should be a maximum of 12 characters.',
-                pattern: 'Password must contain at least one uppercase, lowercase, number, and a special character.'
+                type: 'パスワードフィールドは文字列でなければなりません。',
+                minLength: 'パスワードは最低6文字である必要があります。',
+                maxLength: 'パスワードは最大12文字までです。',
+                pattern: 'パスワードには少なくとも1つの大文字、小文字、数字、および特殊文字が含まれている必要があります。'
             },
         }
     },

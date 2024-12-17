@@ -106,12 +106,13 @@ class productService {
             .pop()}`,
         };
 
-        // * 出品時は通常販売か購読かで判別して出品する
+        // * 出品時は通常販売か定期販売かで判別して出品する
 
         // Set selling price
         if (productMappingObj.hasRegularSales) {
           dataTemplate.price02 = productMappingObj.sellingPrice;
           const result = await this.createProduct(dataTemplate);
+          console.log(JSON.stringify(result.data));
           responses.push(result.data);
         }
 
@@ -164,10 +165,10 @@ class productService {
       }
 
       // Return success response with all product creation responses
-      return {
-        status_code: StatusCodes.MOVED_TEMPORARILY,
-        message: 'SUCCESS',
-      };
+      return await this.commonHelpers.prepareResponse(
+        StatusCodes.OK,
+        'SUCCESS'
+      );
     } catch (error) {
       // Log any errors and return them
       this.logger.error(error);
