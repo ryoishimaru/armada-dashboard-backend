@@ -487,9 +487,7 @@ class webManagerService {
       // カテゴリーの抽出
       const productCategories = Array.from(
         new Set(currentProducts.map((product) => product.productCategory))
-      ).sort((a, b) => b.localeCompare(a));
-
-      console.log(productCategories);
+      );
 
       // 商品のカテゴリー別分類
       const categorizedProducts = currentProducts.reduce((acc, product) => {

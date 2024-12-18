@@ -49,6 +49,7 @@ class WebManagerModel extends BaseModel {
             );
           }
         )
+        .where('spm.salonId', salonId)
         .groupBy('prod.id')
         .orderBy('prod.id', 'DESC');
 
