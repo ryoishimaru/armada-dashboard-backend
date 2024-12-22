@@ -96,7 +96,7 @@ const decryptWithCrypto = function (encryptedText) {
  * @returns get login response
  */
 async function getLoginResponse(userData) {
-  const { id, salonCode } = userData;
+  const { id, salonCode, isUploadWeb } = userData;
 
   // encrypt the user id
   const encryptUserId = encrypt(id);
@@ -108,6 +108,7 @@ async function getLoginResponse(userData) {
 
   const response = {
     token: await JwtAuthSecurityObj.generateJwtToken(tokenData),
+    is_upload_web: isUploadWeb,
   };
 
   return response;

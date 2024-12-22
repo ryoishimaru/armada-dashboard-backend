@@ -137,13 +137,6 @@ class webManagerService {
         })
         .join('');
 
-      // const navHtmlContent = Object.entries(categorizedProducts)
-      //   .sort(([a], [b]) => b.localeCompare(a))
-      //   .map(([category, _]) => {
-      //     return this.navCategories[category];
-      //   })
-      //   .join('');
-
       const navHtmlTemplatePath = path.join(
         __dirname,
         '../../../../../htmlTemplates/html-css_source_file/inc/nav.html'
@@ -564,9 +557,31 @@ class webManagerService {
 
       const remoteShopFolder = `/shop/${salonCode}`;
 
-      // 既存のファイルを削除
-      // await client.clearWorkingDir(remoteShopFolder);
+      const isUploadWeb = await this.webManagerModel.getSalonInfo(salonCode);
 
+      try {
+        const isExistRemoteFolder = await client.list(remoteShopFolder);
+        console.log({ isUploadWeb, isExistRemoteFolder });
+        if (!isUploadWeb && isExistRemoteFolder.length > 0) {
+          console.log('ALREADY_UPLOADED');
+          return await this.commonHelpers.prepareResponse(
+            StatusCodes.UNSUPPORTED_MEDIA_TYPE,
+            'ALREADY_UPLOADED'
+          );
+        }
+      } catch (error) {
+        console.log(error);
+        if (isUploadWeb) {
+          console.log('INTERNAL_SERVER_ERROR');
+          return await this.commonHelpers.prepareResponse(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            'INTERNAL_SERVER_ERROR'
+          );
+        }
+      }
+
+      // 既存のファイルを削除
+      await client.removeDir(remoteShopFolder);
       // 新しいファイルをアップロード
       await client.uploadFromDir(tempDir, remoteShopFolder).then(() => {});
 
@@ -574,6 +589,11 @@ class webManagerService {
 
       // 一時ディレクトリの削除
       fs.rmSync(tempDir, { recursive: true, force: true });
+
+      // データベースの更新
+      await this.webManagerModel.updateSalonInfo(salonCode, {
+        isUploadWeb: 1,
+      });
 
       return await this.commonHelpers.prepareResponse(
         StatusCodes.OK,

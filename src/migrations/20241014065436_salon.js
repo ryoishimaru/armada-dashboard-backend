@@ -8,6 +8,7 @@ exports.up = function (knex) {
       table.string("salonCode", 30).notNullable();
       table.string("email", 100).notNullable();
       table.string("password", 100).notNullable();
+      table.tinyint("isUploadWeb", 1).notNullable();
       table.string("resetToken", 255).nullable();
       table.dateTime("createdAt").notNullable();
     });

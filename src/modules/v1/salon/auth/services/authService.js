@@ -136,7 +136,7 @@ class authService {
       // fetch the combination of email and password
       let userData = await this.authModel.fetchObjWithSingleRecord(
         where,
-        'id,salonCode,email,password',
+        'id,salonCode,email,password,isUploadWeb',
         tableConstants.SALON
       );
 
@@ -296,6 +296,7 @@ class authService {
         email: reqUser.email,
         password: reqUser.password,
         salonCode: reqUser.salonCode,
+        isUploadWeb: 0,
         createdAt: this.DateTimeUtil.getCurrentTimeObjForDB(),
       };
 

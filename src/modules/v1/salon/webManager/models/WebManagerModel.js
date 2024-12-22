@@ -62,6 +62,20 @@ class WebManagerModel extends BaseModel {
       return error;
     }
   }
+
+  async getSalonInfo(salonCode) {
+    const result = await this.db(`${tableConstants.SALON} as s`)
+      .where('s.salonCode', salonCode)
+      .select('s.isUploadWeb');
+
+    return result[0].isUploadWeb;
+  }
+
+  async updateSalonInfo(salonCode, data) {
+    await this.db(`${tableConstants.SALON} as s`)
+      .where('s.salonCode', salonCode)
+      .update(data);
+  }
 }
 
 module.exports = WebManagerModel;
