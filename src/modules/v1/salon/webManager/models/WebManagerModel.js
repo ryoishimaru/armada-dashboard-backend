@@ -28,7 +28,7 @@ class WebManagerModel extends BaseModel {
               MAX(spm.discountRateOnSubscription) AS discountRateOnSubscription,
               MAX(spm.externalProductId) AS externalProductId`),
           this.db.raw(
-            `GROUP_CONCAT(CONCAT('${process.env.ASSETS_URL_BASE}/${commonConstants.PRODUCT.FILE_UPLOAD_PATH}/', product_imgs.image) ORDER BY product_imgs.id SEPARATOR ",") as images`
+            `GROUP_CONCAT(CONCAT('${process.env.IMAGE_UPLOAD_PATH}', product_imgs.image) ORDER BY product_imgs.id SEPARATOR ",") as images`
           )
           // this.db.raw(
           //   `CASE WHEN spm.productId IS NOT NULL THEN 1 ELSE 0 END as isMappedToSalon`
