@@ -357,6 +357,71 @@ class webManagerService {
     }
   }
 
+  async generateCommerceHtml(memberData, tempDir) {
+    try {
+      const htmlTemplateFolder = path.join(
+        __dirname,
+        '../../../../../htmlTemplates/html-css_source_file'
+      );
+
+      const commerceTemplatePath = path.join(
+        htmlTemplateFolder,
+        'commerce.html'
+      );
+      let commerceContent = fs.readFileSync(commerceTemplatePath, 'utf8');
+
+      // 住所の組み立て
+      const fullAddress = `〒${memberData.zip} ${memberData.pref}${memberData.addr01}${memberData.addr02}`;
+
+      // 店舗名の組み立て
+      const shopName = memberData.member_group_name || memberData.company_name;
+
+      const shopOwnerName = `${memberData.name01} ${memberData.name02}`;
+
+      const tel = memberData.tel || '';
+
+      // 店舗名の置換
+      commerceContent = commerceContent
+        .replace(/__REPLACED_SHOP_NAME1__/g, shopName)
+        .replace(/__REPLACED_SHOP_NAME2__/g, shopName);
+
+      // 住所の置換
+      commerceContent = commerceContent.replace(
+        /__REPLACED_SHOP_ADDRESS__/g,
+        fullAddress
+      );
+
+      // 店舗責任者名の置換
+      commerceContent = commerceContent.replace(
+        /__REPLACED_SHOP_OWNER_NAME__/g,
+        shopOwnerName
+      );
+
+      // 電話番号の置換
+      commerceContent = commerceContent.replace(
+        /__REPLACED_SHOP_TEL1__/g,
+        tel.replace('-', '').replace('-', '').replace('-', '')
+      );
+
+      commerceContent = commerceContent.replace(/__REPLACED_SHOP_TEL2__/g, tel);
+
+      // ホームページの置換
+      commerceContent = commerceContent.replace(
+        /__REPLACED_SHOP_URL__/g,
+        memberData.site_url
+      );
+
+      fs.writeFileSync(
+        path.join(tempDir, 'commerce.html'),
+        commerceContent,
+        'utf8'
+      );
+    } catch (error) {
+      this.logger.error('Error generating commerce HTML:', error);
+      throw error;
+    }
+  }
+
   async generateFooterHtml(memberData, tempDir) {
     try {
       const htmlTemplateFolder = path.join(
@@ -536,7 +601,7 @@ class webManagerService {
         indexHtmlContent,
         'utf8'
       );
-
+      await this.generateCommerceHtml(memberData, tempDir);
       await this.generateProductHtml(categorizedProducts, tempDir, salonCode);
       await this.generateNavHtml(categorizedProducts, tempDir);
       await this.generateFooterHtml(memberData, tempDir);
@@ -571,16 +636,11 @@ class webManagerService {
         }
       } catch (error) {
         console.log(error);
-        if (isUploadWeb) {
-          console.log('INTERNAL_SERVER_ERROR');
-          return await this.commonHelpers.prepareResponse(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            'INTERNAL_SERVER_ERROR'
-          );
-        }
       }
 
       // 既存のファイルを削除
+      await client.ensureDir(remoteShopFolder);
+
       await client.removeDir(remoteShopFolder);
       // 新しいファイルをアップロード
       await client.uploadFromDir(tempDir, remoteShopFolder).then(() => {});
